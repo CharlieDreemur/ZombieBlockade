@@ -36,12 +36,12 @@ void UClickableComponent::BeginPlay()
 
 void UClickableComponent::OnMouseEnter(UPrimitiveComponent* TouchedComponent)
 {
-	TouchedComponent->SetMaterial(0, HighlightMaterial);
+	TouchedComponent->SetRenderCustomDepth(true);
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Mouse Entered"));
 }
 
 void UClickableComponent::OnMouseLeave(UPrimitiveComponent* TouchedComponent)
 {
-	TouchedComponent->SetMaterial(0, OriginalMaterial);
+	TouchedComponent->SetRenderCustomDepth(false);
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Mouse Left"));
 }
