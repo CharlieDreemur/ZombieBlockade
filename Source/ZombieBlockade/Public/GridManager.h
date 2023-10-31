@@ -2,24 +2,28 @@
 
 #pragma once
 
+#include "CoreMinimal.h"
 #include <unordered_map>
 
 
 using GridCoord = std::pair<int, int>;
-struct GridCoordHash {
-	std::size_t operator() (const GridCoord& p) const {
+struct GridCoordHash
+{
+	std::size_t operator() (const GridCoord& p) const
+	{
 		return std::hash<int>{}(p.first) ^ std::hash<int>{}(p.second);
 	}
 };
 
-struct Grid {
+struct Grid
+{
 	GridCoord coord;
 };
 
 /**
  * 
  */
-class GridManager
+class ZOMBIEBLOCKADE_API GridManager
 {
 public:
 
