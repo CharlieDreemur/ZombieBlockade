@@ -18,30 +18,27 @@ void UClickableComponent::BeginPlay()
 		TargetComponent = Owner->GetComponentByClass<UStaticMeshComponent>();
 		if (TargetComponent)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("PrimitiveComponent found!"));
-			OriginalMaterial = TargetComponent->GetMaterial(0);
+			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("PrimitiveComponent found!"));
 			TargetComponent->OnBeginCursorOver.AddDynamic(this, &UClickableComponent::OnMouseEnter);
 			TargetComponent->OnEndCursorOver.AddDynamic(this, &UClickableComponent::OnMouseLeave);
 		}
 		else
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No PrimitiveComponent found!"));
+			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No PrimitiveComponent found!"));
 		}
 	}
 	else
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No Owner found!"));
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No Owner found!"));
 	}
 }
 
 void UClickableComponent::OnMouseEnter(UPrimitiveComponent* TouchedComponent)
 {
 	TouchedComponent->SetRenderCustomDepth(true);
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Mouse Entered"));
 }
 
 void UClickableComponent::OnMouseLeave(UPrimitiveComponent* TouchedComponent)
 {
 	TouchedComponent->SetRenderCustomDepth(false);
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Mouse Left"));
 }

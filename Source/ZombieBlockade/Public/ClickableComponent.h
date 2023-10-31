@@ -16,10 +16,6 @@ class ZOMBIEBLOCKADE_API UClickableComponent : public UActorComponent
 public:
 	UClickableComponent();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Materials")
-	UMaterialInterface* HighlightMaterial;
-
-
 	virtual void BeginPlay() override;
 
 private:
@@ -28,7 +24,5 @@ private:
 
 	UFUNCTION()
 	void OnMouseLeave(UPrimitiveComponent* TouchedComponent);
-
-	UMaterialInterface* OriginalMaterial;
 	UPrimitiveComponent* TargetComponent;
 };
