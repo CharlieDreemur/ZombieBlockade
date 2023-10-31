@@ -16,10 +16,11 @@ public:
 	AMouseRaycast();
 
 	UFUNCTION(BlueprintCallable)
-	FVector GetMouseRaycast();
+	static FVector GetMouseRaycast(AActor* Actor);
 
 	UFUNCTION(BlueprintCallable)
-	void OnMouseClick(AActor* TouchedActor, FKey ButtonClicked);
+	static void OnMouseClick(AActor* TouchedActor, FKey ButtonClicked);
+
 
 protected:
 	// Called when the game starts or when spawned
@@ -28,5 +29,6 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
 
 };

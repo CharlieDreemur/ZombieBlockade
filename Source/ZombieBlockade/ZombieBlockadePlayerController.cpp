@@ -11,6 +11,7 @@
 #include "InputActionValue.h"
 #include "EnhancedInputSubsystems.h"
 #include "Engine/LocalPlayer.h"
+#include "MouseRaycast.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -53,6 +54,10 @@ void AZombieBlockadePlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(SetDestinationTouchAction, ETriggerEvent::Triggered, this, &AZombieBlockadePlayerController::OnTouchTriggered);
 		EnhancedInputComponent->BindAction(SetDestinationTouchAction, ETriggerEvent::Completed, this, &AZombieBlockadePlayerController::OnTouchReleased);
 		EnhancedInputComponent->BindAction(SetDestinationTouchAction, ETriggerEvent::Canceled, this, &AZombieBlockadePlayerController::OnTouchReleased);
+
+		//ZombieBlockade Code
+		// New binding for right mouse button click
+		EnhancedInputComponent->BindAction(SetBuildStructurehAction, ETriggerEvent::Started, this, &AZombieBlockadePlayerController::OnBuildStructureTriggered);
 	}
 	else
 	{
@@ -122,4 +127,8 @@ void AZombieBlockadePlayerController::OnTouchReleased()
 {
 	bIsTouch = false;
 	OnSetDestinationReleased();
+}
+
+void AZombieBlockadePlayerController::OnBuildStructureTriggered() {
+	AMouseRaycast::OnMouseClick(this, EKeys::RightMouseButton);
 }

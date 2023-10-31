@@ -4,9 +4,9 @@
 #include "MouseRaycast.h"
 #include "GridManager.h"
 
-FVector AMouseRaycast::GetMouseRaycast()
+FVector AMouseRaycast::GetMouseRaycast(AActor* Actor)
 {
-	APlayerController* playerController = GetWorld()->GetFirstPlayerController();
+	APlayerController* playerController = Actor->GetWorld()->GetFirstPlayerController();
 	FVector2D mousePosition;
 	playerController->GetMousePosition(mousePosition.X, mousePosition.Y);
 
@@ -20,7 +20,7 @@ FVector AMouseRaycast::GetMouseRaycast()
 	FHitResult hitResult;
 	FCollisionQueryParams collisionParams;
 
-	if (GetWorld()->LineTraceSingleByChannel(hitResult, start, end, ECC_Visibility, collisionParams))
+	if (Actor->GetWorld()->LineTraceSingleByChannel(hitResult, start, end, ECC_Visibility, collisionParams))
 	{
 		FVector hitLocation = hitResult.Location;
 		return hitLocation;
@@ -30,7 +30,7 @@ FVector AMouseRaycast::GetMouseRaycast()
 
 void AMouseRaycast::OnMouseClick(AActor* TouchedActor, FKey ButtonClicked)
 {
-	FVector hitLocation = this->GetMouseRaycast();
+	FVector hitLocation = GetMouseRaycast(TouchedActor);
 	Grid grid = GridManager::Instance().GetGridFromCoord(hitLocation.X, hitLocation.Y);
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(
 		TEXT("Raycast: <%s>, Grid: <%d, %d>"), *hitLocation.ToString(), grid.coord.first, grid.coord.second));
@@ -48,7 +48,6 @@ AMouseRaycast::AMouseRaycast()
 void AMouseRaycast::BeginPlay()
 {
 	Super::BeginPlay();
-	OnClicked.AddDynamic(this, &AMouseRaycast::OnMouseClick);
 }
 
 // Called every frame
@@ -56,4 +55,3 @@ void AMouseRaycast::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
-
