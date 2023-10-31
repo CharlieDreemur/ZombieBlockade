@@ -32,7 +32,7 @@ void AMouseRaycast::OnMouseClick(AActor* TouchedActor, FKey ButtonClicked)
 {
 	FVector hitLocation = GetMouseRaycast(TouchedActor);
 	Grid grid = GridManager::Instance().GetGridFromCoord(hitLocation.X, hitLocation.Y);
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(
 		TEXT("Raycast: <%s>, Grid: <%d, %d>"), *hitLocation.ToString(), grid.coord.first, grid.coord.second));
 }
 

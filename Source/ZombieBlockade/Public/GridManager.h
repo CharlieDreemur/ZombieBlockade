@@ -29,16 +29,16 @@ public:
 	static GridManager& Instance();
 
 	float GetGridSize() const;
-	Grid GetGridFromCoord(float x, float y) const;
+	Grid GetGridFromCoord(float x, float y, const GridCoord& size = { 1, 1 }) const;
 
 	bool CheckEmpty(const GridCoord& coord, const GridCoord& size) const;
-	bool AddBuilding(ABuilding* building, bool overwrite = true);
+	bool AddBuilding(ABuilding* building, bool overwrite = false);
 	void RemoveBuilding(ABuilding* building);
 
-	const float gridSize;
 	std::unordered_map<GridCoord, ABuilding*, GridCoordHash> gridToBuilding;
 
 private:
+	const float gridSize;
 	GridManager(float gridSize);
 	~GridManager();
 };

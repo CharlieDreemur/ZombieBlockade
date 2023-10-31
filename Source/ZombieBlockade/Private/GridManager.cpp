@@ -20,9 +20,13 @@ float GridManager::GetGridSize() const
 	return this->gridSize;
 }
 
-Grid GridManager::GetGridFromCoord(float x, float y) const
+Grid GridManager::GetGridFromCoord(float x, float y, const GridCoord& size) const
 {
-	return { { std::floor(x / this->gridSize), std::floor(y / this->gridSize) } };
+	return
+	{{
+		FMath::RoundToInt((x - size.first * this->gridSize / 2) / this->gridSize),
+		FMath::RoundToInt((y - size.second * this->gridSize / 2) / this->gridSize)
+	}};
 }
 
 bool GridManager::CheckEmpty(const GridCoord& coord, const GridCoord& size) const
@@ -30,7 +34,7 @@ bool GridManager::CheckEmpty(const GridCoord& coord, const GridCoord& size) cons
 	auto [x, y] = coord;
 	for (int i = 0; i < size.first; i++) {
 		for (int j = 0; j < size.second; j++) {
-			if (this->gridToBuilding.contains({ x + i, y + i })) return false;
+			if (this->gridToBuilding.contains({ x + i, y + j })) return false;
 		}
 	}
 	return true;
@@ -40,10 +44,11 @@ bool GridManager::AddBuilding(ABuilding* building, bool overwrite)
 {
 	auto [x, y] = building->coord;
 	if (!overwrite && !this->CheckEmpty(building->coord, building->size)) {
+		return false;
 	}
 	for (int i = 0; i < building->size.first; i++) {
 		for (int j = 0; j < building->size.second; j++) {
-			this->gridToBuilding[{x + i, y + j}] = building;
+			this->gridToBuilding[{ x + i, y + j }] = building;
 		}
 	}
 	return true;

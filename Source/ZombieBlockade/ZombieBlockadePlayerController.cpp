@@ -12,6 +12,8 @@
 #include "EnhancedInputSubsystems.h"
 #include "Engine/LocalPlayer.h"
 #include "MouseRaycast.h"
+#include "GridManager.h"
+#include "Building.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -129,6 +131,47 @@ void AZombieBlockadePlayerController::OnTouchReleased()
 	OnSetDestinationReleased();
 }
 
-void AZombieBlockadePlayerController::OnBuildStructureTriggered() {
-	AMouseRaycast::OnMouseClick(this, EKeys::RightMouseButton);
+void AZombieBlockadePlayerController::OnBuildStructureTriggered()
+{
+	GridCoord size = { 1, 3 };
+	std::string BPName = "BP_Building1x3";
+
+	// AMouseRaycast::OnMouseClick(this, EKeys::RightMouseButton);
+	FVector hitLocation = AMouseRaycast::GetMouseRaycast(this);
+	GridCoord coord = GridManager::Instance().GetGridFromCoord(hitLocation.X, hitLocation.Y, size).coord;
+	GridCoord exactCoord = GridManager::Instance().GetGridFromCoord(hitLocation.X, hitLocation.Y).coord;
+	float gridSize = GridManager::Instance().GetGridSize();
+	if (GridManager::Instance().CheckEmpty(coord, size))
+	{
+		// Add building
+		std::wstring path = L"Blueprint'/Game/Blueprints/BP_Building1x3.BP_Building1x3_C'";
+		UClass* buildingClass = StaticLoadClass(AActor::StaticClass(), nullptr,
+			reinterpret_cast<const TCHAR*>(path.c_str()));
+		UWorld* world = GetWorld();
+		FVector location = FVector(coord.first * gridSize, coord.second * gridSize, 0);
+
+		if (world && buildingClass)
+		{
+			ABuilding* newBuilding = world->SpawnActor<ABuilding>(buildingClass, location, FRotator(0, 0, 0), {});
+			newBuilding->coord = coord;
+			newBuilding->size = size;
+			GridManager::Instance().AddBuilding(newBuilding, true);
+			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(
+			//	TEXT("Add building: <%d, %d>"), coord.first, coord.second));
+		}
+		else
+		{
+			// Display error message
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Cannot find BP of Building")));
+		}
+	}
+	else if (GridManager::Instance().gridToBuilding.contains(exactCoord))
+	{
+		// Remove building
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(
+		//	TEXT("Remove building: <%d, %d>"), exactCoord.first, exactCoord.second));
+		ABuilding* OldBuilding = GridManager::Instance().gridToBuilding.at(exactCoord);
+		GridManager::Instance().RemoveBuilding(OldBuilding);
+		OldBuilding->Destroy();
+	}
 }
