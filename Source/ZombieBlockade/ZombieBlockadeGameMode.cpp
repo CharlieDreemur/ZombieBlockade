@@ -4,6 +4,7 @@
 #include "ZombieBlockadePlayerController.h"
 #include "ZombieBlockadeCharacter.h"
 #include "UObject/ConstructorHelpers.h"
+#include "CustomHUD.h"
 
 AZombieBlockadeGameMode::AZombieBlockadeGameMode()
 {
@@ -22,5 +23,10 @@ AZombieBlockadeGameMode::AZombieBlockadeGameMode()
 	if(PlayerControllerBPClass.Class != NULL)
 	{
 		PlayerControllerClass = PlayerControllerBPClass.Class;
+	}
+
+	static ConstructorHelpers::FClassFinder<ACustomHUD> HUDClassFinder(TEXT("/Game/TopDown/Blueprints/Widget_OverallHud"));
+	if (HUDClassFinder.Succeeded()) {
+		HUDClass = HUDClassFinder.Class;
 	}
 }
