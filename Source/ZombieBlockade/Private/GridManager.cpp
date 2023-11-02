@@ -65,7 +65,17 @@ void GridManager::RemoveBuilding(ABuilding* building)
 	}
 }
 
-GridManager::GridManager(float gridSize) : gridSize(gridSize)
+void GridManager::SelectBuilding(const BuildingInfo& newSelectedBuilding)
+{
+	this->selectedBuilding = newSelectedBuilding;
+}
+
+const BuildingInfo& GridManager::GetSelectedBuilding() const
+{
+	return this->selectedBuilding;
+}
+
+GridManager::GridManager(float gridSize) : gridSize(gridSize), selectedBuilding{ L"", {0, 0} }
 {
 }
 
