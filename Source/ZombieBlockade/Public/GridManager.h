@@ -19,6 +19,12 @@ struct Grid
 	GridCoord coord;
 };
 
+/// @todo Temp struct for storing information of next building
+struct BuildingInfo
+{
+	std::wstring name;
+	GridCoord size;
+};
 /**
  * 
  */
@@ -35,10 +41,14 @@ public:
 	bool AddBuilding(ABuilding* building, bool overwrite = false);
 	void RemoveBuilding(ABuilding* building);
 
+	void SelectBuilding(const BuildingInfo& newSelectedBuilding);
+	const BuildingInfo& GetSelectedBuilding() const;
+
 	std::unordered_map<GridCoord, ABuilding*, GridCoordHash> gridToBuilding;
 
 private:
 	const float gridSize;
+	BuildingInfo selectedBuilding;
 	GridManager(float gridSize);
 	~GridManager();
 };
