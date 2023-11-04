@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include <unordered_map>
-
+#include "ZombieBlockadeDataAsset.h"
 
 class ABuilding;
 
@@ -19,12 +19,6 @@ struct Grid
 	GridCoord coord;
 };
 
-/// @todo Temp struct for storing information of next building
-struct BuildingInfo
-{
-	std::wstring name;
-	GridCoord size;
-};
 /**
  * 
  */
@@ -41,14 +35,19 @@ public:
 	bool AddBuilding(ABuilding* building, bool overwrite = false);
 	void RemoveBuilding(ABuilding* building);
 
-	void SelectBuilding(const BuildingInfo& newSelectedBuilding);
-	const BuildingInfo& GetSelectedBuilding() const;
+	void SetSelectBuildingPair(TPair<TSoftClassPtr<ABuilding>, FBuildingData*> newSelectedBuilding);
+	const TPair<TSoftClassPtr<ABuilding>, FBuildingData*> GetSelectedBuildingPair() const;
 
 	std::unordered_map<GridCoord, ABuilding*, GridCoordHash> gridToBuilding;
+	UZombieBlockadeDataAsset* dataAsset;
+	void SwitchSelectedBuilding(bool isNext);
+	void SpawnSelectedBuilding(AActor* actor);
 
 private:
 	const float gridSize;
-	BuildingInfo selectedBuilding;
+	//No need to store it as ptr since the inner class is ptr already, no huge performance cost
+	TSoftClassPtr<ABuilding> _selectedBuilding;
+	FBuildingData* _selectedBuildingData;
 	GridManager(float gridSize);
 	~GridManager();
 };
