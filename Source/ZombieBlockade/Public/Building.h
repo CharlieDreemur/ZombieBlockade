@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "GridManager.h"
+#include <string>
 #include "Building.generated.h"
 
 
@@ -16,10 +17,11 @@ class ZOMBIEBLOCKADE_API ABuilding : public AActor
 public:
 	// Sets default values for this actor's properties
 	ABuilding();
-
 	GridCoord GetSize() const;
 	GridCoord coord;
 	GridCoord size;
+	//Expose to blueprint
+	std::string name;
 
 protected:
 	// Called when the game starts or when spawned
