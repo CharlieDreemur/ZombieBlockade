@@ -16,11 +16,11 @@ GridManager& GridManager::Instance()
 	return instance;
 }
 
-GridManager::GridManager(float gridSize) : gridSize(gridSize), _selectedBuilding(nullptr), _selectedBuildingData(nullptr)
+GridManager::GridManager(float gridSize) : gridSize(gridSize), _selectedBuildingData(nullptr)
 {
 	dataAsset = Cast<UZombieBlockadeDataAsset>(StaticLoadObject(UZombieBlockadeDataAsset::StaticClass(), nullptr, TEXT("/Game/DataAssets/DAE_ZombieBlockade.DAE_ZombieBlockade")));
 	//print all building choices counts 
-	int count = dataAsset->BuildingMap.Num();
+	int count = dataAsset->BuildingInfo.Num();
 	UE_LOG(LogTemp, Warning, TEXT("Get DataAsset, building count: %d"), count);
 
 
@@ -76,47 +76,39 @@ void GridManager::RemoveBuilding(ABuilding* building)
 	}
 }
 
-void GridManager::SetSelectBuildingPair(TPair<TSoftClassPtr<ABuilding>, FBuildingData*> newSelectedBuilding)
+void GridManager::SetSelectBuildingPair(FBuildingData* newBuildingData)
 {
-	this->_selectedBuilding = newSelectedBuilding.Key;
-	this->_selectedBuildingData = newSelectedBuilding.Value;
+	this->_selectedBuildingData = newBuildingData;
 }
 
-const TPair<TSoftClassPtr<ABuilding>, FBuildingData*> GridManager::GetSelectedBuildingPair() const
+const FBuildingData* GridManager::GetSelectedBuildingPair() const
 {
-	return TPair<TSoftClassPtr<ABuilding>, FBuildingData*>(this->_selectedBuilding, this->_selectedBuildingData);
+	return this->_selectedBuildingData;
 }
 
 
 void GridManager::SwitchSelectedBuilding(bool forward)
 {
-	//Note that TMap is not a sorted container, so the order of keys is not guaranteed,use itertor instead
-	//TODO: however, after we have a building UI, we can directly access specific building by indexing without iterating
+
 	static int i = 0;
-	if (!dataAsset || dataAsset->BuildingMap.IsEmpty()) {
+	if (!dataAsset || dataAsset->BuildingInfo.IsEmpty()) {
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No building data asset"));
 		return;
 	}
 
-	TArray<TSoftClassPtr<ABuilding>> Keys;
-	dataAsset->BuildingMap.GetKeys(Keys); // Get all keys as an array.
 	if (forward)
 	{
-		i = (i + 1) % Keys.Num(); // Wrap around if index exceeds the number of keys.
+		i = (i + 1) % dataAsset->BuildingInfo.Num();
 	}
 	else
 	{
-		i = (i - 1 + Keys.Num()) % Keys.Num(); // Wrap around if index goes below 0.
+		i = (i - 1 + dataAsset->BuildingInfo.Num()) % dataAsset->BuildingInfo.Num();
 	}
-	TSoftClassPtr<ABuilding> CurrentKey = Keys[i]; // Get the current key using the index.
-		// Now, we can get the value (if needed) and load the class synchronously.
-	FBuildingData* BuildingData = dataAsset->BuildingMap.Find(CurrentKey);
 
-	if (!BuildingData) {
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No building data"));
-		return;
-	}
-	TPair<TSoftClassPtr<ABuilding>, FBuildingData*> SelectedBuildingPair(CurrentKey, BuildingData);
+	//print i
+	UE_LOG(LogTemp, Warning, TEXT("Switch building, i: %d"), i);
+	FBuildingData* BuildingData = &(dataAsset->BuildingInfo[i]);
+	FBuildingData* SelectedBuildingPair(BuildingData);
 	GridManager::Instance().SetSelectBuildingPair(SelectedBuildingPair);
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("%s"), *BuildingData->name.ToString()));
 
@@ -124,8 +116,8 @@ void GridManager::SwitchSelectedBuilding(bool forward)
 
 void GridManager::SpawnSelectedBuilding(AActor* ptrActor)
 {
-	// Return if nothing selected
-	if (!_selectedBuilding || !_selectedBuildingData)
+	
+	if (!_selectedBuildingData)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("No building selected")));
 		return;
@@ -144,7 +136,7 @@ void GridManager::SpawnSelectedBuilding(AActor* ptrActor)
 
 		if (world)
 		{
-			ABuilding* newBuilding = world->SpawnActor<ABuilding>(_selectedBuilding.LoadSynchronous(), location, FRotator(0, 0, 0), {});
+			ABuilding* newBuilding = world->SpawnActor<ABuilding>(_selectedBuildingData->blueprint.LoadSynchronous(), location, FRotator(0, 0, 0), {});
 			newBuilding->coord = coord;
 			newBuilding->size = buildingSize;
 			AddBuilding(newBuilding, true);
