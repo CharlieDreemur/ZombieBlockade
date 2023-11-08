@@ -137,35 +137,20 @@ void AZombieBlockadePlayerController::OnTouchReleased()
 
 void AZombieBlockadePlayerController::OnScrollForward()
 {
-	GridManager::Instance().SwitchSelectedBuilding(true);
+	GridManager::Instance().TempSwitchSelectedBuilding(true, this);
 }
 
 void AZombieBlockadePlayerController::OnScrollBackward()
 {
-	GridManager::Instance().SwitchSelectedBuilding(false);
+	GridManager::Instance().TempSwitchSelectedBuilding(false, this);
 }
 
-void AZombieBlockadePlayerController::OnSwitchSelectedBuilding(bool forward)
+void AZombieBlockadePlayerController::OnBuildStructureTriggered()
 {
-	static std::vector<BuildingInfo> buildings = {
-		{ L"BP_Building2x2", 2, 2 },
-		{ L"BP_Building1x3", 1, 3 },
-		{ L"BP_Building3x2", 3, 2 },
-	};
-	static int i = 0;
-	if (forward)
-	{
-		i = (i + 1) % buildings.size();
-	}
-	else
-	{
-		i--;
-		if (i < 0) i += buildings.size();
-	}
-	GridManager::Instance().SelectBuilding(buildings[i]);
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("%ls"), buildings[i].name.c_str()));
+	GridManager::Instance().DeploySelectedBuilding(this);
 }
 
+/*
 void AZombieBlockadePlayerController::_OnBuildStructureTriggered()
 {
 	const BuildingInfo& info = GridManager::Instance().GetSelectedBuilding();
@@ -217,8 +202,4 @@ void AZombieBlockadePlayerController::_OnBuildStructureTriggered()
 		OldBuilding->Destroy();
 	}
 }
-
-void AZombieBlockadePlayerController::OnBuildStructureTriggered()
-{
-	GridManager::Instance().SpawnSelectedBuilding(this);
-}
+*/
