@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "GridManager.h"
+#include <string>
 #include "Building.generated.h"
 
 
@@ -22,6 +23,8 @@ public:
 	int sizeX;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Building");
 	int sizeY;
+	//Expose to blueprint
+	std::string name;
 
 protected:
 	// Called when the game starts or when spawned

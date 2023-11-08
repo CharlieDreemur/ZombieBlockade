@@ -137,12 +137,12 @@ void AZombieBlockadePlayerController::OnTouchReleased()
 
 void AZombieBlockadePlayerController::OnScrollForward()
 {
-	this->OnSwitchSelectedBuilding(true);
+	GridManager::Instance().SwitchSelectedBuilding(true);
 }
 
 void AZombieBlockadePlayerController::OnScrollBackward()
 {
-	this->OnSwitchSelectedBuilding(false);
+	GridManager::Instance().SwitchSelectedBuilding(false);
 }
 
 void AZombieBlockadePlayerController::OnSwitchSelectedBuilding(bool forward)
@@ -166,7 +166,7 @@ void AZombieBlockadePlayerController::OnSwitchSelectedBuilding(bool forward)
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("%ls"), buildings[i].name.c_str()));
 }
 
-void AZombieBlockadePlayerController::OnBuildStructureTriggered()
+void AZombieBlockadePlayerController::_OnBuildStructureTriggered()
 {
 	const BuildingInfo& info = GridManager::Instance().GetSelectedBuilding();
 
@@ -216,4 +216,9 @@ void AZombieBlockadePlayerController::OnBuildStructureTriggered()
 		GridManager::Instance().RemoveBuilding(OldBuilding);
 		OldBuilding->Destroy();
 	}
+}
+
+void AZombieBlockadePlayerController::OnBuildStructureTriggered()
+{
+	GridManager::Instance().SpawnSelectedBuilding(this);
 }
