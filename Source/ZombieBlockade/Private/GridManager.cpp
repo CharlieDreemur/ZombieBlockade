@@ -16,7 +16,7 @@ GridManager& GridManager::Instance()
 	return instance;
 }
 
-GridManager::GridManager(float gridSize) : gridSize(gridSize), _selectedBuildingData(nullptr)
+GridManager::GridManager(float gridSize) : gridSize(gridSize), _selectedBuilding(nullptr)
 {
 	dataAsset = Cast<UZombieBlockadeDataAsset>(StaticLoadObject(UZombieBlockadeDataAsset::StaticClass(), nullptr, TEXT("/Game/DataAssets/DAE_ZombieBlockade.DAE_ZombieBlockade")));
 	// Print all building choices counts 
@@ -91,14 +91,12 @@ const ABuilding* GridManager::GetSelectedBuilding() const
 void GridManager::TempSwitchSelectedBuilding(bool forward, AActor* ptrActor)
 {
 	static int i = 0;
-	if (!this->dataAsset || this->dataAsset->BuildingMap.IsEmpty()) {
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No building data asset"));
+	if (!this->dataAsset) {
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Building data asset not found"));
 		return;
 	}
 
-	TArray<TSoftClassPtr<ABuilding>> keys;
-	dataAsset->BuildingMap.GetKeys(keys); // Get all keys as an array.
-	int32 count = keys.Num() + 1;
+	int32 count = dataAsset->BuildingInfo.Num() + 1;
 	if (forward)
 	{
 		i = (i + 1) % count; // Wrap around if index exceeds the number of keys + 1.
@@ -107,12 +105,12 @@ void GridManager::TempSwitchSelectedBuilding(bool forward, AActor* ptrActor)
 	{
 		i = (i - 1 + count) % count; // Wrap around if index goes below 0.
 	}
-	TSoftClassPtr<ABuilding> currentKey = i ? keys[i-1] : nullptr; // Get the current key using the index (0: nullptr; 1~Num: actual building).
+	FBuildingData* buildingData = i ? &dataAsset->BuildingInfo[i-1] : nullptr; // Get the current key using the index (0: nullptr; 1~Num: actual building).
 	// Now, we can get the value (if needed) and load the class synchronously.
-	this->SwitchSelectedBuilding(currentKey, ptrActor);
+	this->SwitchSelectedBuilding(buildingData, ptrActor);
 }
 
-void GridManager::SwitchSelectedBuilding(TSoftClassPtr<ABuilding> buildingType, AActor* ptrActor)
+void GridManager::SwitchSelectedBuilding(FBuildingData* buildingData, AActor* ptrActor)
 {
 	// Destroy current selection
 	if (this->_selectedBuilding)
@@ -122,21 +120,14 @@ void GridManager::SwitchSelectedBuilding(TSoftClassPtr<ABuilding> buildingType, 
 	}
 
 	// If pass in nullptr, do nothing
-	if (buildingType == nullptr)
+	if (!buildingData)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Cancel build"));
 		return;
 	}
 
 	// Otherwise find the building data and spawn a new building to be deployed
-	FBuildingData* buildingData = dataAsset->BuildingMap.Find(buildingType);
-	if (!buildingData)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Cannot find building data"));
-		return;
-	}
-
-	ABuilding* newBuilding = ptrActor->GetWorld()->SpawnActor<ABuilding>(buildingType.LoadSynchronous());
+	ABuilding* newBuilding = ptrActor->GetWorld()->SpawnActor<ABuilding>(buildingData->blueprint.LoadSynchronous());
 	newBuilding->data = buildingData;
 	this->_selectedBuilding = newBuilding;
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("Switched to building: %s"), *newBuilding->data->name.ToString()));

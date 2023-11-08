@@ -45,7 +45,7 @@ public:
 	// In the future, the logic should take place in the building UI
 	void TempSwitchSelectedBuilding(bool forward, AActor* ptrActor);
 
-	void SwitchSelectedBuilding(TSoftClassPtr<ABuilding> buildingType, AActor* ptrActor);
+	void SwitchSelectedBuilding(FBuildingData* buildingData, AActor* ptrActor);
 	void DeploySelectedBuilding(AActor* actor);
 
 private:
