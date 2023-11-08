@@ -23,7 +23,8 @@ struct Grid
 struct BuildingInfo
 {
 	std::wstring name;
-	GridCoord size;
+	int sizeX;
+	int sizeY;
 };
 /**
  * 
@@ -35,9 +36,9 @@ public:
 	static GridManager& Instance();
 
 	float GetGridSize() const;
-	Grid GetGridFromCoord(float x, float y, const GridCoord& size = { 1, 1 }) const;
+	Grid GetGridFromCoord(float x, float y) const;
 
-	bool CheckEmpty(const GridCoord& coord, const GridCoord& size) const;
+	bool CheckEmpty(const GridCoord& coord, int sizeX, int sizeY) const;
 	bool AddBuilding(ABuilding* building, bool overwrite = false);
 	void RemoveBuilding(ABuilding* building);
 

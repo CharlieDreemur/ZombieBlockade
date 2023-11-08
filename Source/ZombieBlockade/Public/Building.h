@@ -17,9 +17,11 @@ public:
 	// Sets default values for this actor's properties
 	ABuilding();
 
-	GridCoord GetSize() const;
 	GridCoord coord;
-	GridCoord size;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Building");
+	int sizeX;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Building");
+	int sizeY;
 
 protected:
 	// Called when the game starts or when spawned

@@ -148,9 +148,9 @@ void AZombieBlockadePlayerController::OnScrollBackward()
 void AZombieBlockadePlayerController::OnSwitchSelectedBuilding(bool forward)
 {
 	static std::vector<BuildingInfo> buildings = {
-		{ L"BP_Building2x2", { 2, 2 } },
-		{ L"BP_Building1x3", { 1, 3 } },
-		{ L"BP_Building3x2", { 3, 2 } },
+		{ L"BP_Building2x2", 2, 2 },
+		{ L"BP_Building1x3", 1, 3 },
+		{ L"BP_Building3x2", 3, 2 },
 	};
 	static int i = 0;
 	if (forward)
@@ -177,12 +177,14 @@ void AZombieBlockadePlayerController::OnBuildStructureTriggered()
 		return;
 	}
 
-	// AMouseRaycast::OnMouseClick(this, EKeys::RightMouseButton);
+	AMouseRaycast::OnMouseClick(this, EKeys::RightMouseButton);
 	FVector hitLocation = AMouseRaycast::GetMouseRaycast(this);
-	GridCoord coord = GridManager::Instance().GetGridFromCoord(hitLocation.X, hitLocation.Y, info.size).coord;
+	GridCoord coord = GridManager::Instance().GetGridFromCoord(
+		hitLocation.X - (info.sizeX - 1) * GridManager::Instance().GetGridSize() * 0.5,
+		hitLocation.Y - (info.sizeY - 1) * GridManager::Instance().GetGridSize() * 0.5).coord;
 	GridCoord exactCoord = GridManager::Instance().GetGridFromCoord(hitLocation.X, hitLocation.Y).coord;
 	float gridSize = GridManager::Instance().GetGridSize();
-	if (GridManager::Instance().CheckEmpty(coord, info.size))
+	if (GridManager::Instance().CheckEmpty(coord, info.sizeX, info.sizeY))
 	{
 		// Add building
 		std::wstring path = L"Blueprint'/Game/Blueprints/" + info.name + L"." + info.name + L"_C'";
@@ -195,10 +197,9 @@ void AZombieBlockadePlayerController::OnBuildStructureTriggered()
 		{
 			ABuilding* newBuilding = world->SpawnActor<ABuilding>(buildingClass, location, FRotator(0, 0, 0), {});
 			newBuilding->coord = coord;
-			newBuilding->size = info.size;
 			GridManager::Instance().AddBuilding(newBuilding, true);
-			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(
-			//	TEXT("Add building: <%d, %d>"), coord.first, coord.second));
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(
+				TEXT("Add building: <%d, %d>, <%d, %d>"), coord.first, coord.second, info.sizeX, info.sizeY));
 		}
 		else
 		{
@@ -209,8 +210,8 @@ void AZombieBlockadePlayerController::OnBuildStructureTriggered()
 	else if (GridManager::Instance().gridToBuilding.contains(exactCoord))
 	{
 		// Remove building
-		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(
-		//	TEXT("Remove building: <%d, %d>"), exactCoord.first, exactCoord.second));
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(
+			TEXT("Remove building: <%d, %d>"), exactCoord.first, exactCoord.second));
 		ABuilding* OldBuilding = GridManager::Instance().gridToBuilding.at(exactCoord);
 		GridManager::Instance().RemoveBuilding(OldBuilding);
 		OldBuilding->Destroy();
