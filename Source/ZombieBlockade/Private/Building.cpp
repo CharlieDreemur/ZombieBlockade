@@ -2,6 +2,7 @@
 
 
 #include "Building.h"
+#include "MouseRaycast.h"
 
 // Sets default values
 ABuilding::ABuilding() : coord(0, 0), data(nullptr), isDeployed(false)
@@ -28,5 +29,16 @@ void ABuilding::BeginPlay()
 void ABuilding::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	// TODO: Follow the mouse if not deployed
+	if (this->isDeployed) return;
+
+	// Follow the mouse if not deployed
+	if (!this->data) return;
+	FVector hitLocation = AMouseRaycast::GetMouseRaycastToPlaneZ(this, 0.0f);
+	float gridSize = GridManager::Instance().GetGridSize();
+	this->coord = GridManager::Instance().GetGridFromCoord(
+		hitLocation.X - (this->data->size_x - 1) * gridSize * 0.5,
+		hitLocation.Y - (this->data->size_y - 1) * gridSize * 0.5).coord;
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(
+	//	TEXT("Move building: <%d, %d>, <%d, %d>"), coord.first, coord.second, this->data->size_x, this->data->size_y));
+	this->SetActorLocation(FVector(coord.first * gridSize, coord.second * gridSize, 0));
 }

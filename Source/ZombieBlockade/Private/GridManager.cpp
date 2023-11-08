@@ -21,8 +21,8 @@ GridManager::GridManager(float gridSize) : gridSize(gridSize), _selectedBuilding
 	dataAsset = Cast<UZombieBlockadeDataAsset>(StaticLoadObject(UZombieBlockadeDataAsset::StaticClass(), nullptr, TEXT("/Game/DataAssets/DAE_ZombieBlockade.DAE_ZombieBlockade")));
 	// Print all building choices counts
 	UE_LOG(LogTemp, Warning, TEXT("Get DataAsset: %p"), dataAsset);
-	//int count = dataAsset->BuildingMap.Num();
-	//UE_LOG(LogTemp, Warning, TEXT("Get DataAsset, building count: %d"), count);
+	int count = dataAsset->BuildingMap.Num();
+	UE_LOG(LogTemp, Warning, TEXT("Get DataAsset, building count: %d"), count);
 }
 
 GridManager::~GridManager()
@@ -114,16 +114,24 @@ void GridManager::TempSwitchSelectedBuilding(bool forward, AActor* ptrActor)
 
 void GridManager::SwitchSelectedBuilding(TSoftClassPtr<ABuilding> buildingType, AActor* ptrActor)
 {
-	// Destroy current selection if pass in nullptr
-	if (buildingType == nullptr) {
-		if (!this->_selectedBuilding) return;
+	// Destroy current selection
+	if (this->_selectedBuilding)
+	{
 		this->_selectedBuilding->Destroy();
 		this->_selectedBuilding = nullptr;
 	}
 
+	// If pass in nullptr, do nothing
+	if (buildingType == nullptr)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Cancel build"));
+		return;
+	}
+
 	// Otherwise find the building data and spawn a new building to be deployed
 	FBuildingData* buildingData = dataAsset->BuildingMap.Find(buildingType);
-	if (!buildingData) {
+	if (!buildingData)
+	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Cannot find building data"));
 		return;
 	}
@@ -159,43 +167,42 @@ void GridManager::SwitchSelectedBuilding(TSoftClassPtr<ABuilding> buildingType, 
 
 void GridManager::DeploySelectedBuilding(AActor* ptrActor)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("No building selected: %p"), this->_selectedBuilding));
-	return;
-	// Return if nothing selected
+	// Mouse raycast
+	FVector hitLocation = AMouseRaycast::GetMouseRaycast(ptrActor);
+	GridCoord exactCoord = GetGridFromCoord(hitLocation.X, hitLocation.Y).coord;
+
+	// If nothing selected, check if should remove a building
 	if (!this->_selectedBuilding)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("No building selected")));
+		if (gridToBuilding.contains(exactCoord))
+		{
+			// Remove building
+			// TODO: Temporary function. Need another method for removing buildings.
+
+			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(
+			//	TEXT("Remove building: <%d, %d>"), exactCoord.first, exactCoord.second));
+			ABuilding* OldBuilding = gridToBuilding.at(exactCoord);
+			RemoveBuilding(OldBuilding);
+			OldBuilding->Destroy();
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("No building selected")));
+		}
 		return;
 	}
 
-	// AMouseRaycast::OnMouseClick(this, EKeys::RightMouseButton);
-	FVector hitLocation = AMouseRaycast::GetMouseRaycast(ptrActor);
+	// Otherwise deploy the building
 	int sizeX = this->_selectedBuilding->data->size_x;
 	int sizeY = this->_selectedBuilding->data->size_y;
-	GridCoord coord = GridManager::Instance().GetGridFromCoord(
-		hitLocation.X - (sizeX - 1) * GridManager::Instance().GetGridSize() * 0.5,
-		hitLocation.Y - (sizeY - 1) * GridManager::Instance().GetGridSize() * 0.5).coord;
-	GridCoord exactCoord = GetGridFromCoord(hitLocation.X, hitLocation.Y).coord;
-	if (CheckEmpty(coord, sizeX, sizeY))
+	GridCoord coord = this->_selectedBuilding->coord;
+	if (this->CheckEmpty(coord, sizeX, sizeY))
 	{
 		// Add building
-		UWorld* world = ptrActor->GetWorld();
-		FVector location = FVector(coord.first * gridSize, coord.second * gridSize, 0);
-
 		AddBuilding(this->_selectedBuilding, true);
-		this->_selectedBuilding->isDeployed = true;
+		this->_selectedBuilding->deploy();
 		this->_selectedBuilding = nullptr;
 		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(
 		//	TEXT("Add building: <%d, %d>"), coord.first, coord.second));
-	}
-	else if (gridToBuilding.contains(exactCoord))
-	{
-		// Remove building
-		// TODO: Temporary function. Need another method for removing buildings.
-		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(
-		//	TEXT("Remove building: <%d, %d>"), exactCoord.first, exactCoord.second));
-		ABuilding* OldBuilding = gridToBuilding.at(exactCoord);
-		RemoveBuilding(OldBuilding);
-		OldBuilding->Destroy();
 	}
 }
