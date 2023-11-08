@@ -97,17 +97,18 @@ void GridManager::TempSwitchSelectedBuilding(bool forward, AActor* ptrActor)
 		return;
 	}
 
-	TArray<TSoftClassPtr<ABuilding>> Keys;
-	dataAsset->BuildingMap.GetKeys(Keys); // Get all keys as an array.
+	TArray<TSoftClassPtr<ABuilding>> keys;
+	dataAsset->BuildingMap.GetKeys(keys); // Get all keys as an array.
+	int32 count = keys.Num() + 1;
 	if (forward)
 	{
-		i = (i + 1) % Keys.Num(); // Wrap around if index exceeds the number of keys.
+		i = (i + 1) % count; // Wrap around if index exceeds the number of keys + 1.
 	}
 	else
 	{
-		i = (i - 1 + Keys.Num()) % Keys.Num(); // Wrap around if index goes below 0.
+		i = (i - 1 + count) % count; // Wrap around if index goes below 0.
 	}
-	TSoftClassPtr<ABuilding> currentKey = Keys[i]; // Get the current key using the index.
+	TSoftClassPtr<ABuilding> currentKey = i ? keys[i-1] : nullptr; // Get the current key using the index (0: nullptr; 1~Num: actual building).
 	// Now, we can get the value (if needed) and load the class synchronously.
 	this->SwitchSelectedBuilding(currentKey, ptrActor);
 }
