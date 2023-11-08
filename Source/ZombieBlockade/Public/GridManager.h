@@ -35,8 +35,8 @@ public:
 	bool AddBuilding(ABuilding* building, bool overwrite = false);
 	void RemoveBuilding(ABuilding* building);
 
-	void SetSelectBuildingPair(TPair<TSoftClassPtr<ABuilding>, FBuildingData*> newSelectedBuilding);
-	const TPair<TSoftClassPtr<ABuilding>, FBuildingData*> GetSelectedBuildingPair() const;
+	void SetSelectBuildingPair(FBuildingData* newBuildingData);
+	const FBuildingData* GetSelectedBuildingPair() const;
 
 	std::unordered_map<GridCoord, ABuilding*, GridCoordHash> gridToBuilding;
 	UZombieBlockadeDataAsset* dataAsset;
@@ -46,7 +46,6 @@ public:
 private:
 	const float gridSize;
 	//No need to store it as ptr since the inner class is ptr already, no huge performance cost
-	TSoftClassPtr<ABuilding> _selectedBuilding;
 	FBuildingData* _selectedBuildingData;
 	GridManager(float gridSize);
 	~GridManager();
