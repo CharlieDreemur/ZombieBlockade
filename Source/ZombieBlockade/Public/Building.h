@@ -22,13 +22,15 @@ public:
 	GridCoord coord;
 	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Building");
 	FBuildingData* data;
-	void deploy();
+	void SetDeployed(bool value);
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	// Whether the building is already deployed or is prepared to be deployed (spawned for preview)
 	float isDeployed;
+	TArray<UMaterialInstanceDynamic*> dynamicMaterials;
+	virtual void SetOpacity(float opacity);
 
 public:	
 	// Called every frame

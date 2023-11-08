@@ -201,7 +201,7 @@ void GridManager::DeploySelectedBuilding(AActor* ptrActor)
 	{
 		// Add building
 		AddBuilding(this->_selectedBuilding, true);
-		this->_selectedBuilding->deploy();
+		this->_selectedBuilding->SetDeployed(true);
 		this->_selectedBuilding = nullptr;
 		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(
 		//	TEXT("Add building: <%d, %d>"), coord.first, coord.second));
