@@ -137,17 +137,29 @@ void AZombieBlockadePlayerController::OnTouchReleased()
 
 void AZombieBlockadePlayerController::OnScrollForward()
 {
+<<<<<<< Updated upstream
 	GridManager::Instance().SwitchSelectedBuilding(true);
+=======
+	AGridManager::Instance()->TempSwitchSelectedBuilding(true, this);
+>>>>>>> Stashed changes
 }
 
 void AZombieBlockadePlayerController::OnScrollBackward()
 {
+<<<<<<< Updated upstream
 	GridManager::Instance().SwitchSelectedBuilding(false);
+=======
+	AGridManager::Instance()->TempSwitchSelectedBuilding(false, this);
+>>>>>>> Stashed changes
 }
 
 
 
 void AZombieBlockadePlayerController::OnBuildStructureTriggered()
 {
+<<<<<<< Updated upstream
 	GridManager::Instance().SpawnSelectedBuilding(this);
+=======
+	AGridManager::Instance()->DeploySelectedBuilding(this);
+>>>>>>> Stashed changes
 }

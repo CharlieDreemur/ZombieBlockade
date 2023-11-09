@@ -30,8 +30,37 @@ FVector AMouseRaycast::GetMouseRaycast(AActor* Actor)
 
 void AMouseRaycast::OnMouseClick(AActor* TouchedActor, FKey ButtonClicked)
 {
+<<<<<<< Updated upstream
 	FVector hitLocation = GetMouseRaycast(TouchedActor);
 	Grid grid = GridManager::Instance().GetGridFromCoord(hitLocation.X, hitLocation.Y);
+=======
+    APlayerController* PlayerController = actor->GetWorld()->GetFirstPlayerController();
+
+    FVector2D mousePosition;
+    PlayerController->GetMousePosition(mousePosition.X, mousePosition.Y);
+
+    FVector worldLocation;
+    FVector worldDirection;
+    PlayerController->DeprojectScreenPositionToWorld(mousePosition.X, mousePosition.Y, worldLocation, worldDirection);
+
+    // Ensure we are not trying to divide by zero
+	if (FMath::IsNearlyZero(worldDirection.Z)) return FVector(-1, -1, -1);
+
+    // Calculate the scalar t for the parametric equation of the line
+    float t = (planeZ - worldLocation.Z) / worldDirection.Z;
+
+    // If t is negative, the intersection is behind the ray's origin
+    if (t < 0.0f) return FVector(-1, -1, -1);
+
+    // Calculate the intersection point using the scalar t
+    return worldLocation + (worldDirection * t);
+}
+
+void AMouseRaycast::OnMouseClick(AActor* touchedActor, FKey buttonClicked)
+{
+	FVector hitLocation = GetMouseRaycast(touchedActor);
+	Grid grid = AGridManager::Instance()->GetGridFromCoord(hitLocation.X, hitLocation.Y);
+>>>>>>> Stashed changes
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(
 		TEXT("Raycast: <%s>, Grid: <%d, %d>"), *hitLocation.ToString(), grid.coord.first, grid.coord.second));
 }
