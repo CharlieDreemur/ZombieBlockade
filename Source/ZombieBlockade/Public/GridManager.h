@@ -49,7 +49,6 @@ public:
 	void DeploySelectedBuilding(AActor* actor);
 
 private:
-	const float gridSize;
 	//No need to store it as ptr since the inner class is ptr already, no huge performance cost
 	ABuilding* _selectedBuilding;
 	GridManager(float gridSize);

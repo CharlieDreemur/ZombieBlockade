@@ -16,7 +16,7 @@ GridManager& GridManager::Instance()
 	return instance;
 }
 
-GridManager::GridManager(float gridSize) : gridSize(gridSize), _selectedBuilding(nullptr)
+GridManager::GridManager(float gridSize) : _selectedBuilding(nullptr)
 {
 	dataAsset = Cast<UZombieBlockadeDataAsset>(StaticLoadObject(UZombieBlockadeDataAsset::StaticClass(), nullptr, TEXT("/Game/DataAssets/DAE_ZombieBlockade.DAE_ZombieBlockade")));
 	// Print all building choices counts 
@@ -30,15 +30,15 @@ GridManager::~GridManager()
 
 float GridManager::GetGridSize() const
 {
-	return this->gridSize;
+	return dataAsset->gridSize;
 }
 
 Grid GridManager::GetGridFromCoord(float x, float y) const
 {
 	return
 	{ {
-		FMath::RoundToInt(x / this->gridSize - 0.5),
-		FMath::RoundToInt(y / this->gridSize - 0.5)
+		FMath::RoundToInt(x / dataAsset->gridSize - 0.5),
+		FMath::RoundToInt(y / dataAsset->gridSize - 0.5)
 	}};
 }
 

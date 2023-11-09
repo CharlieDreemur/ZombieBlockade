@@ -34,6 +34,8 @@ class ZOMBIEBLOCKADE_API UZombieBlockadeDataAsset : public UPrimaryDataAsset
 	GENERATED_BODY()
 
 public:
+	UPROPERTY(EditAnywhere, Category = "Config")
+	float gridSize = 100.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Config")
 	TArray<FBuildingData> BuildingInfo;
 
