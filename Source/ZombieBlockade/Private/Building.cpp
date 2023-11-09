@@ -66,8 +66,8 @@ void ABuilding::Tick(float DeltaTime)
 	// Follow the mouse if not deployed
 	if (!this->data) return;
 	FVector hitLocation = AMouseRaycast::GetMouseRaycastToPlaneZ(this, 0.0f);
-	float gridSize = GridManager::Instance().GetGridSize();
-	this->coord = GridManager::Instance().GetGridFromCoord(
+	float gridSize = UGridManager::Instance()->GetGridSize();
+	this->coord = UGridManager::Instance()->GetGridFromCoord(
 		hitLocation.X - (this->data->size_x - 1) * gridSize * 0.5,
 		hitLocation.Y - (this->data->size_y - 1) * gridSize * 0.5).coord;
 	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(

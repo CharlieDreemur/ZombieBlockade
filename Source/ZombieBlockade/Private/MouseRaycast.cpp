@@ -55,7 +55,7 @@ FVector AMouseRaycast::GetMouseRaycastToPlaneZ(AActor* actor, int planeZ)
 void AMouseRaycast::OnMouseClick(AActor* touchedActor, FKey buttonClicked)
 {
 	FVector hitLocation = GetMouseRaycast(touchedActor);
-	Grid grid = GridManager::Instance().GetGridFromCoord(hitLocation.X, hitLocation.Y);
+	Grid grid = UGridManager::Instance()->GetGridFromCoord(hitLocation.X, hitLocation.Y);
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(
 		TEXT("Raycast: <%s>, Grid: <%d, %d>"), *hitLocation.ToString(), grid.coord.first, grid.coord.second));
 }

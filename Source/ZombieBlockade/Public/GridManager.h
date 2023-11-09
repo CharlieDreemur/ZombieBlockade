@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include <unordered_map>
 #include "ZombieBlockadeDataAsset.h"
+#include "GridManager.generated.h"
 
 class ABuilding;
 
@@ -22,11 +23,14 @@ struct Grid
 /**
  * 
  */
-class ZOMBIEBLOCKADE_API GridManager
+UCLASS()
+class ZOMBIEBLOCKADE_API UGridManager: public UObject
 {
+	GENERATED_BODY()
+
 public:
 
-	static GridManager& Instance();
+	static UGridManager* Instance();
 
 	float GetGridSize() const;
 	Grid GetGridFromCoord(float x, float y) const;
@@ -50,7 +54,9 @@ public:
 
 private:
 	//No need to store it as ptr since the inner class is ptr already, no huge performance cost
+	static UGridManager* _instance;
 	ABuilding* _selectedBuilding;
-	GridManager(float gridSize);
-	~GridManager();
+	~UGridManager();
 };
+
+UGridManager* UGridManager::_instance = nullptr;

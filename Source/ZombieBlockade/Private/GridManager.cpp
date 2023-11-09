@@ -10,30 +10,34 @@ std::size_t GridCoordHash::operator()(const GridCoord& p) const
 	return std::hash<int>{}(p.first) ^ std::hash<int>{}(p.second);
 }
 
-GridManager& GridManager::Instance()
+UGridManager* UGridManager::Instance()
 {
-	static GridManager instance(100);
-	return instance;
+	if (!_instance)
+	{
+		_instance = NewObject<UGridManager>();
+		_instance->gridToBuilding = std::unordered_map<GridCoord, ABuilding*, GridCoordHash>();
+		_instance->_selectedBuilding = nullptr;
+		_instance->dataAsset = Cast<UZombieBlockadeDataAsset>(StaticLoadObject(UZombieBlockadeDataAsset::StaticClass(), nullptr, TEXT("/Game/DataAssets/DAE_ZombieBlockade.DAE_ZombieBlockade")));
+		// Print all building choices counts 
+		int count = _instance->dataAsset->BuildingInfo.Num();
+		UE_LOG(LogTemp, Warning, TEXT("Get DataAsset, building count: %d"), count);
+	}
+	return _instance;
 }
 
-GridManager::GridManager(float gridSize) : _selectedBuilding(nullptr)
+
+UGridManager::~UGridManager()
 {
-	dataAsset = Cast<UZombieBlockadeDataAsset>(StaticLoadObject(UZombieBlockadeDataAsset::StaticClass(), nullptr, TEXT("/Game/DataAssets/DAE_ZombieBlockade.DAE_ZombieBlockade")));
-	// Print all building choices counts 
-	int count = dataAsset->BuildingInfo.Num();
-	UE_LOG(LogTemp, Warning, TEXT("Get DataAsset, building count: %d"), count);
+	_instance = nullptr;
+	gridToBuilding.clear();
 }
 
-GridManager::~GridManager()
-{
-}
-
-float GridManager::GetGridSize() const
+float UGridManager::GetGridSize() const
 {
 	return dataAsset->gridSize;
 }
 
-Grid GridManager::GetGridFromCoord(float x, float y) const
+Grid UGridManager::GetGridFromCoord(float x, float y) const
 {
 	return
 	{ {
@@ -42,7 +46,7 @@ Grid GridManager::GetGridFromCoord(float x, float y) const
 	}};
 }
 
-bool GridManager::CheckEmpty(const GridCoord& coord, int sizeX, int sizeY) const
+bool UGridManager::CheckEmpty(const GridCoord& coord, int sizeX, int sizeY) const
 {
 	auto [x, y] = coord;
 	for (int i = 0; i < sizeX; i++) {
@@ -53,7 +57,7 @@ bool GridManager::CheckEmpty(const GridCoord& coord, int sizeX, int sizeY) const
 	return true;
 }
 
-bool GridManager::AddBuilding(ABuilding* building, bool overwrite)
+bool UGridManager::AddBuilding(ABuilding* building, bool overwrite)
 {
 	auto [x, y] = building->coord;
 	if (!overwrite && !this->CheckEmpty(building->coord, building->data->size_x, building->data->size_y)) {
@@ -67,7 +71,7 @@ bool GridManager::AddBuilding(ABuilding* building, bool overwrite)
 	return true;
 }
 
-void GridManager::RemoveBuilding(ABuilding* building)
+void UGridManager::RemoveBuilding(ABuilding* building)
 {
 	if (!building) return;
 	auto [x, y] = building->coord;
@@ -78,17 +82,17 @@ void GridManager::RemoveBuilding(ABuilding* building)
 	}
 }
 
-void GridManager::SetSelectedBuilding(ABuilding* newSelectedBuilding)
+void UGridManager::SetSelectedBuilding(ABuilding* newSelectedBuilding)
 {
 	this->_selectedBuilding = newSelectedBuilding;
 }
 
-const ABuilding* GridManager::GetSelectedBuilding() const
+const ABuilding* UGridManager::GetSelectedBuilding() const
 {
 	return this->_selectedBuilding;
 }
 
-void GridManager::TempSwitchSelectedBuilding(bool forward, AActor* ptrActor)
+void UGridManager::TempSwitchSelectedBuilding(bool forward, AActor* ptrActor)
 {
 	static int i = 0;
 	if (!this->dataAsset) {
@@ -110,7 +114,7 @@ void GridManager::TempSwitchSelectedBuilding(bool forward, AActor* ptrActor)
 	this->SwitchSelectedBuilding(buildingData, ptrActor);
 }
 
-void GridManager::SwitchSelectedBuilding(FBuildingData* buildingData, AActor* ptrActor)
+void UGridManager::SwitchSelectedBuilding(FBuildingData* buildingData, AActor* ptrActor)
 {
 	// Destroy current selection
 	if (this->_selectedBuilding)
@@ -154,7 +158,7 @@ void GridManager::SwitchSelectedBuilding(FBuildingData* buildingData, AActor* pt
 	*/
 }	
 
-void GridManager::DeploySelectedBuilding(AActor* ptrActor)
+void UGridManager::DeploySelectedBuilding(AActor* ptrActor)
 {
 	// Mouse raycast
 	FVector hitLocation = AMouseRaycast::GetMouseRaycast(ptrActor);
