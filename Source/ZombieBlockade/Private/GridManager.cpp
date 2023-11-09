@@ -16,14 +16,16 @@ GridManager& GridManager::Instance()
 	return instance;
 }
 
-GridManager::GridManager(float gridSize) : gridSize(gridSize), _selectedBuildingData(nullptr)
+GridManager::GridManager(float gridSize) : gridSize(gridSize), _selectedBuilding(nullptr)
 {
 	dataAsset = Cast<UZombieBlockadeDataAsset>(StaticLoadObject(UZombieBlockadeDataAsset::StaticClass(), nullptr, TEXT("/Game/DataAssets/DAE_ZombieBlockade.DAE_ZombieBlockade")));
-	//print all building choices counts 
+	// Print all building choices counts 
 	int count = dataAsset->BuildingInfo.Num();
 	UE_LOG(LogTemp, Warning, TEXT("Get DataAsset, building count: %d"), count);
+}
 
-
+GridManager::~GridManager()
+{
 }
 
 float GridManager::GetGridSize() const
@@ -31,20 +33,20 @@ float GridManager::GetGridSize() const
 	return this->gridSize;
 }
 
-Grid GridManager::GetGridFromCoord(float x, float y, const GridCoord& size) const
+Grid GridManager::GetGridFromCoord(float x, float y) const
 {
 	return
-	{{
-		FMath::RoundToInt((x - size.first * this->gridSize / 2) / this->gridSize),
-		FMath::RoundToInt((y - size.second * this->gridSize / 2) / this->gridSize)
+	{ {
+		FMath::RoundToInt(x / this->gridSize - 0.5),
+		FMath::RoundToInt(y / this->gridSize - 0.5)
 	}};
 }
 
-bool GridManager::CheckEmpty(const GridCoord& coord, const GridCoord& size) const
+bool GridManager::CheckEmpty(const GridCoord& coord, int sizeX, int sizeY) const
 {
 	auto [x, y] = coord;
-	for (int i = 0; i < size.first; i++) {
-		for (int j = 0; j < size.second; j++) {
+	for (int i = 0; i < sizeX; i++) {
+		for (int j = 0; j < sizeY; j++) {
 			if (this->gridToBuilding.contains({ x + i, y + j })) return false;
 		}
 	}
@@ -54,11 +56,11 @@ bool GridManager::CheckEmpty(const GridCoord& coord, const GridCoord& size) cons
 bool GridManager::AddBuilding(ABuilding* building, bool overwrite)
 {
 	auto [x, y] = building->coord;
-	if (!overwrite && !this->CheckEmpty(building->coord, building->size)) {
+	if (!overwrite && !this->CheckEmpty(building->coord, building->data->size_x, building->data->size_y)) {
 		return false;
 	}
-	for (int i = 0; i < building->size.first; i++) {
-		for (int j = 0; j < building->size.second; j++) {
+	for (int i = 0; i < building->data->size_x; i++) {
+		for (int j = 0; j < building->data->size_y; j++) {
 			this->gridToBuilding[{ x + i, y + j }] = building;
 		}
 	}
@@ -69,27 +71,70 @@ void GridManager::RemoveBuilding(ABuilding* building)
 {
 	if (!building) return;
 	auto [x, y] = building->coord;
-	for (int i = 0; i < building->size.first; i++) {
-		for (int j = 0; j < building->size.second; j++) {
+	for (int i = 0; i < building->data->size_x; i++) {
+		for (int j = 0; j < building->data->size_y; j++) {
 			this->gridToBuilding.erase({ x + i, y + j });
 		}
 	}
 }
 
-void GridManager::SetSelectBuildingPair(FBuildingData* newBuildingData)
+void GridManager::SetSelectedBuilding(ABuilding* newSelectedBuilding)
 {
-	this->_selectedBuildingData = newBuildingData;
+	this->_selectedBuilding = newSelectedBuilding;
 }
 
-const FBuildingData* GridManager::GetSelectedBuildingPair() const
+const ABuilding* GridManager::GetSelectedBuilding() const
 {
-	return this->_selectedBuildingData;
+	return this->_selectedBuilding;
 }
 
-
-void GridManager::SwitchSelectedBuilding(bool forward)
+void GridManager::TempSwitchSelectedBuilding(bool forward, AActor* ptrActor)
 {
+	static int i = 0;
+	if (!this->dataAsset) {
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Building data asset not found"));
+		return;
+	}
 
+	int32 count = dataAsset->BuildingInfo.Num() + 1;
+	if (forward)
+	{
+		i = (i + 1) % count; // Wrap around if index exceeds the number of keys + 1.
+	}
+	else
+	{
+		i = (i - 1 + count) % count; // Wrap around if index goes below 0.
+	}
+	FBuildingData* buildingData = i ? &dataAsset->BuildingInfo[i-1] : nullptr; // Get the current key using the index (0: nullptr; 1~Num: actual building).
+	// Now, we can get the value (if needed) and load the class synchronously.
+	this->SwitchSelectedBuilding(buildingData, ptrActor);
+}
+
+void GridManager::SwitchSelectedBuilding(FBuildingData* buildingData, AActor* ptrActor)
+{
+	// Destroy current selection
+	if (this->_selectedBuilding)
+	{
+		this->_selectedBuilding->Destroy();
+		this->_selectedBuilding = nullptr;
+	}
+
+	// If pass in nullptr, do nothing
+	if (!buildingData)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Cancel build"));
+		return;
+	}
+
+	// Otherwise find the building data and spawn a new building to be deployed
+	ABuilding* newBuilding = ptrActor->GetWorld()->SpawnActor<ABuilding>(buildingData->blueprint.LoadSynchronous());
+	newBuilding->data = buildingData;
+	this->_selectedBuilding = newBuilding;
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("Switched to building: %s"), *newBuilding->data->name.ToString()));
+
+	/*
+	//Note that TMap is not a sorted container, so the order of keys is not guaranteed,use itertor instead
+	//TODO: however, after we have a building UI, we can directly access specific building by indexing without iterating
 	static int i = 0;
 	if (!dataAsset || dataAsset->BuildingInfo.IsEmpty()) {
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No building data asset"));
@@ -104,63 +149,49 @@ void GridManager::SwitchSelectedBuilding(bool forward)
 	{
 		i = (i - 1 + dataAsset->BuildingInfo.Num()) % dataAsset->BuildingInfo.Num();
 	}
-
-	//print i
-	UE_LOG(LogTemp, Warning, TEXT("Switch building, i: %d"), i);
-	FBuildingData* BuildingData = &(dataAsset->BuildingInfo[i]);
-	FBuildingData* SelectedBuildingPair(BuildingData);
-	GridManager::Instance().SetSelectBuildingPair(SelectedBuildingPair);
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("%s"), *BuildingData->name.ToString()));
-
+	TSoftClassPtr<ABuilding> CurrentKey = Keys[i]; // Get the current key using the index.
+		// Now, we can get the value (if needed) and load the class synchronously.
+	*/
 }	
 
-void GridManager::SpawnSelectedBuilding(AActor* ptrActor)
+void GridManager::DeploySelectedBuilding(AActor* ptrActor)
 {
-	
-	if (!_selectedBuildingData)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("No building selected")));
-		return;
-	}
-
-	// AMouseRaycast::OnMouseClick(this, EKeys::RightMouseButton);
+	// Mouse raycast
 	FVector hitLocation = AMouseRaycast::GetMouseRaycast(ptrActor);
-	GridCoord buildingSize = GridCoord(_selectedBuildingData->size_x, _selectedBuildingData->size_y);
-	GridCoord coord = GetGridFromCoord(hitLocation.X, hitLocation.Y, buildingSize).coord;
 	GridCoord exactCoord = GetGridFromCoord(hitLocation.X, hitLocation.Y).coord;
-	if (CheckEmpty(coord, buildingSize))
-	{
-		// Add building
-		UWorld* world = ptrActor->GetWorld();
-		FVector location = FVector(coord.first * gridSize, coord.second * gridSize, 0);
 
-		if (world)
+	// If nothing selected, check if should remove a building
+	if (!this->_selectedBuilding)
+	{
+		if (gridToBuilding.contains(exactCoord))
 		{
-			ABuilding* newBuilding = world->SpawnActor<ABuilding>(_selectedBuildingData->blueprint.LoadSynchronous(), location, FRotator(0, 0, 0), {});
-			newBuilding->coord = coord;
-			newBuilding->size = buildingSize;
-			AddBuilding(newBuilding, true);
-			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(
-			//	TEXT("Add building: <%d, %d>"), coord.first, coord.second));
+			// Remove building
+			// TODO: Temporary function. Need another method for removing buildings.
+
+			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(
+			//	TEXT("Remove building: <%d, %d>"), exactCoord.first, exactCoord.second));
+			ABuilding* OldBuilding = gridToBuilding.at(exactCoord);
+			RemoveBuilding(OldBuilding);
+			OldBuilding->Destroy();
 		}
 		else
 		{
-			// Display error message
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Cannot find BP of Building")));
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("No building selected")));
 		}
+		return;
 	}
-	else if (gridToBuilding.contains(exactCoord))
-	{
-		// Remove building
-		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(
-		//	TEXT("Remove building: <%d, %d>"), exactCoord.first, exactCoord.second));
-		ABuilding* OldBuilding = gridToBuilding.at(exactCoord);
-		RemoveBuilding(OldBuilding);
-		OldBuilding->Destroy();
-	}
-	
 
-}
-GridManager::~GridManager()
-{
+	// Otherwise deploy the building
+	int sizeX = this->_selectedBuilding->data->size_x;
+	int sizeY = this->_selectedBuilding->data->size_y;
+	GridCoord coord = this->_selectedBuilding->coord;
+	if (this->CheckEmpty(coord, sizeX, sizeY))
+	{
+		// Add building
+		AddBuilding(this->_selectedBuilding, true);
+		this->_selectedBuilding->SetDeployed(true);
+		this->_selectedBuilding = nullptr;
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(
+		//	TEXT("Add building: <%d, %d>"), coord.first, coord.second));
+	}
 }

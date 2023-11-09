@@ -29,24 +29,29 @@ public:
 	static GridManager& Instance();
 
 	float GetGridSize() const;
-	Grid GetGridFromCoord(float x, float y, const GridCoord& size = { 1, 1 }) const;
+	Grid GetGridFromCoord(float x, float y) const;
 
-	bool CheckEmpty(const GridCoord& coord, const GridCoord& size) const;
+	bool CheckEmpty(const GridCoord& coord, int sizeX, int sizeY) const;
 	bool AddBuilding(ABuilding* building, bool overwrite = false);
 	void RemoveBuilding(ABuilding* building);
 
-	void SetSelectBuildingPair(FBuildingData* newBuildingData);
-	const FBuildingData* GetSelectedBuildingPair() const;
+	void SetSelectedBuilding(ABuilding* newSelectedBuilding);
+	const ABuilding* GetSelectedBuilding() const;
 
 	std::unordered_map<GridCoord, ABuilding*, GridCoordHash> gridToBuilding;
 	UZombieBlockadeDataAsset* dataAsset;
-	void SwitchSelectedBuilding(bool isNext);
-	void SpawnSelectedBuilding(AActor* actor);
+
+	// Temporary function for switching the selected building forward/backward
+	// In the future, the logic should take place in the building UI
+	void TempSwitchSelectedBuilding(bool forward, AActor* ptrActor);
+
+	void SwitchSelectedBuilding(FBuildingData* buildingData, AActor* ptrActor);
+	void DeploySelectedBuilding(AActor* actor);
 
 private:
 	const float gridSize;
 	//No need to store it as ptr since the inner class is ptr already, no huge performance cost
-	FBuildingData* _selectedBuildingData;
+	ABuilding* _selectedBuilding;
 	GridManager(float gridSize);
 	~GridManager();
 };
