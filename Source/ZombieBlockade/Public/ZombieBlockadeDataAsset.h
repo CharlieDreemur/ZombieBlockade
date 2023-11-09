@@ -13,6 +13,9 @@ USTRUCT(BlueprintType)
 struct FBuildingData
 {
 	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Config")
+	TSoftClassPtr<ABuilding> blueprint;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Config")
 	FName name;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Config")
@@ -26,11 +29,14 @@ struct FBuildingData
 };
 
 UCLASS()
-class ZOMBIEBLOCKADE_API UZombieBlockadeDataAsset : public UDataAsset
+class ZOMBIEBLOCKADE_API UZombieBlockadeDataAsset : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
 
 public:
+	UPROPERTY(EditAnywhere, Category = "Config")
+	float gridSize = 100.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Config")
-	TMap<TSoftClassPtr<ABuilding>, FBuildingData> BuildingMap;
+	TArray<FBuildingData> BuildingInfo;
+
 };

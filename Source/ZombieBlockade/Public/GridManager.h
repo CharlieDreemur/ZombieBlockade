@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include <unordered_map>
 #include "ZombieBlockadeDataAsset.h"
+#include "GridManager.generated.h"
 
 class ABuilding;
 
@@ -22,32 +23,40 @@ struct Grid
 /**
  * 
  */
-class ZOMBIEBLOCKADE_API GridManager
+UCLASS()
+class ZOMBIEBLOCKADE_API UGridManager: public UObject
 {
+	GENERATED_BODY()
+
 public:
 
-	static GridManager& Instance();
+	static UGridManager* Instance();
 
 	float GetGridSize() const;
-	Grid GetGridFromCoord(float x, float y, const GridCoord& size = { 1, 1 }) const;
+	Grid GetGridFromCoord(float x, float y) const;
 
-	bool CheckEmpty(const GridCoord& coord, const GridCoord& size) const;
+	bool CheckEmpty(const GridCoord& coord, int sizeX, int sizeY) const;
 	bool AddBuilding(ABuilding* building, bool overwrite = false);
 	void RemoveBuilding(ABuilding* building);
 
-	void SetSelectBuildingPair(TPair<TSoftClassPtr<ABuilding>, FBuildingData*> newSelectedBuilding);
-	const TPair<TSoftClassPtr<ABuilding>, FBuildingData*> GetSelectedBuildingPair() const;
+	void SetSelectedBuilding(ABuilding* newSelectedBuilding);
+	const ABuilding* GetSelectedBuilding() const;
 
 	std::unordered_map<GridCoord, ABuilding*, GridCoordHash> gridToBuilding;
 	UZombieBlockadeDataAsset* dataAsset;
-	void SwitchSelectedBuilding(bool isNext);
-	void SpawnSelectedBuilding(AActor* actor);
+
+	// Temporary function for switching the selected building forward/backward
+	// In the future, the logic should take place in the building UI
+	void TempSwitchSelectedBuilding(bool forward, AActor* ptrActor);
+
+	void SwitchSelectedBuilding(FBuildingData* buildingData, AActor* ptrActor);
+	void DeploySelectedBuilding(AActor* actor);
 
 private:
-	const float gridSize;
 	//No need to store it as ptr since the inner class is ptr already, no huge performance cost
-	TSoftClassPtr<ABuilding> _selectedBuilding;
-	FBuildingData* _selectedBuildingData;
-	GridManager(float gridSize);
-	~GridManager();
+	static UGridManager* _instance;
+	ABuilding* _selectedBuilding;
+	~UGridManager();
 };
+
+UGridManager* UGridManager::_instance = nullptr;
