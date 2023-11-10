@@ -157,10 +157,10 @@ void UGridManager::SwitchSelectedBuilding(FBuildingData* buildingData, UObject* 
 	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("Switched to building: %s"), *newBuilding->data->name.ToString()));
 }	
 
-void UGridManager::DeploySelectedBuilding(AActor* ptrActor)
+void UGridManager::DeploySelectedBuilding(UObject* worldContextObject)
 {
 	// Mouse raycast
-	FVector hitLocation = AMouseRaycast::GetMouseRaycast(ptrActor);
+	FVector hitLocation = AMouseRaycast::GetMouseRaycast(worldContextObject);
 	GridCoord exactCoord = GetGridFromCoord(hitLocation.X, hitLocation.Y).coord;
 
 	// If nothing selected, check if should remove a building
@@ -204,7 +204,9 @@ void UGridManager::DeploySelectedBuilding(AActor* ptrActor)
 		// Add building
 		AddBuilding(this->_selectedBuilding, true);
 		this->_selectedBuilding->SetDeployed(true);
+		FBuildingData* buildingData = this->_selectedBuilding->data;
 		this->_selectedBuilding = nullptr;
+		this->SwitchSelectedBuilding(buildingData, worldContextObject);
 		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(
 		//	TEXT("Add building: <%d, %d>"), coord.first, coord.second));
 	}

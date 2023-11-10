@@ -4,9 +4,9 @@
 #include "MouseRaycast.h"
 #include "GridManager.h"
 
-FVector AMouseRaycast::GetMouseRaycast(AActor* actor)
+FVector AMouseRaycast::GetMouseRaycast(UObject* worldContextObject)
 {
-	APlayerController* playerController = actor->GetWorld()->GetFirstPlayerController();
+	APlayerController* playerController = worldContextObject->GetWorld()->GetFirstPlayerController();
 	FVector2D mousePosition;
 	playerController->GetMousePosition(mousePosition.X, mousePosition.Y);
 
@@ -20,7 +20,7 @@ FVector AMouseRaycast::GetMouseRaycast(AActor* actor)
 	FHitResult hitResult;
 	FCollisionQueryParams collisionParams;
 
-	if (actor->GetWorld()->LineTraceSingleByChannel(hitResult, start, end, ECC_Visibility, collisionParams))
+	if (worldContextObject->GetWorld()->LineTraceSingleByChannel(hitResult, start, end, ECC_Visibility, collisionParams))
 	{
 		FVector hitLocation = hitResult.Location;
 		return hitLocation;
@@ -28,9 +28,9 @@ FVector AMouseRaycast::GetMouseRaycast(AActor* actor)
 	return FVector();
 }
 
-FVector AMouseRaycast::GetMouseRaycastToPlaneZ(AActor* actor, int planeZ)
+FVector AMouseRaycast::GetMouseRaycastToPlaneZ(UObject* worldContextObject, int planeZ)
 {
-    APlayerController* PlayerController = actor->GetWorld()->GetFirstPlayerController();
+    APlayerController* PlayerController = worldContextObject->GetWorld()->GetFirstPlayerController();
 
     FVector2D mousePosition;
     PlayerController->GetMousePosition(mousePosition.X, mousePosition.Y);
