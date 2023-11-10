@@ -24,13 +24,17 @@ struct Grid
  * 
  */
 UCLASS()
-class ZOMBIEBLOCKADE_API UGridManager: public UObject
+class ZOMBIEBLOCKADE_API UGridManager : public UObject
 {
 	GENERATED_BODY()
+	friend class UGameManager;
 
 public:
-
+	UFUNCTION(BlueprintCallable, Category = "Grid Manager", DisplayName = "Grid Manager Instance")
 	static UGridManager* Instance();
+
+	UFUNCTION(BlueprintCallable, Category = "Grid Manager", DisplayName = "Grid Manager Reset")
+	static void reset();
 
 	float GetGridSize() const;
 	Grid GetGridFromCoord(float x, float y) const;
@@ -42,21 +46,22 @@ public:
 	void SetSelectedBuilding(ABuilding* newSelectedBuilding);
 	const ABuilding* GetSelectedBuilding() const;
 
-	std::unordered_map<GridCoord, ABuilding*, GridCoordHash> gridToBuilding;
-	UZombieBlockadeDataAsset* dataAsset;
+	UFUNCTION(BlueprintCallable, Category="Grid Manager", meta = (WorldContext = "worldContextObject"))
+	void SwitchSelectedBuildingByIndex(int id, UObject* worldContextObject);
 
 	// Temporary function for switching the selected building forward/backward
 	// In the future, the logic should take place in the building UI
-	void TempSwitchSelectedBuilding(bool forward, AActor* ptrActor);
+	void TempSwitchSelectedBuilding(bool forward, UObject* WorldContextObject);
 
-	void SwitchSelectedBuilding(FBuildingData* buildingData, AActor* ptrActor);
+	void SwitchSelectedBuilding(FBuildingData* buildingData, UObject* worldContextObject);
 	void DeploySelectedBuilding(AActor* actor);
 
 private:
-	//No need to store it as ptr since the inner class is ptr already, no huge performance cost
-	static UGridManager* _instance;
-	ABuilding* _selectedBuilding;
-	~UGridManager();
-};
+	UGridManager();
 
-UGridManager* UGridManager::_instance = nullptr;
+	static UGridManager* _instance;
+
+	ABuilding* _selectedBuilding;
+	std::unordered_map<GridCoord, ABuilding*, GridCoordHash> gridToBuilding;
+	UZombieBlockadeDataAsset* dataAsset;
+};
