@@ -3,6 +3,7 @@
 #include "GridManager.h"
 #include <cmath>
 #include "Building.h"
+#include "Economy.h"
 #include <MouseRaycast.h>
 
 std::size_t GridCoordHash::operator()(const GridCoord& p) const
@@ -10,26 +11,35 @@ std::size_t GridCoordHash::operator()(const GridCoord& p) const
 	return std::hash<int>{}(p.first) ^ std::hash<int>{}(p.second);
 }
 
+UGridManager* UGridManager::_instance = nullptr;
+
 UGridManager* UGridManager::Instance()
 {
 	if (!_instance)
 	{
 		_instance = NewObject<UGridManager>();
-		_instance->gridToBuilding = std::unordered_map<GridCoord, ABuilding*, GridCoordHash>();
-		_instance->_selectedBuilding = nullptr;
-		_instance->dataAsset = Cast<UZombieBlockadeDataAsset>(StaticLoadObject(UZombieBlockadeDataAsset::StaticClass(), nullptr, TEXT("/Game/DataAssets/DAE_ZombieBlockade.DAE_ZombieBlockade")));
-		// Print all building choices counts 
-		int count = _instance->dataAsset->BuildingInfo.Num();
-		UE_LOG(LogTemp, Warning, TEXT("Get DataAsset, building count: %d"), count);
+		_instance->AddToRoot();
 	}
 	return _instance;
 }
 
-
-UGridManager::~UGridManager()
+void UGridManager::reset()
 {
-	_instance = nullptr;
-	gridToBuilding.clear();
+	if (_instance)
+	{
+		_instance->RemoveFromRoot();
+		_instance = nullptr;
+	}
+}
+
+
+UGridManager::UGridManager() : _selectedBuilding(nullptr), gridToBuilding()
+{
+	this->dataAsset = Cast<UZombieBlockadeDataAsset>(
+		StaticLoadObject(UZombieBlockadeDataAsset::StaticClass(), nullptr, TEXT("/Game/DataAssets/DAE_ZombieBlockade.DAE_ZombieBlockade")));
+	// Print all building choices counts 
+	int count = this->dataAsset->BuildingInfo.Num();
+	UE_LOG(LogTemp, Warning, TEXT("Get DataAsset, building count: %d"), count);
 }
 
 float UGridManager::GetGridSize() const
@@ -92,7 +102,20 @@ const ABuilding* UGridManager::GetSelectedBuilding() const
 	return this->_selectedBuilding;
 }
 
-void UGridManager::TempSwitchSelectedBuilding(bool forward, AActor* ptrActor)
+void UGridManager::SwitchSelectedBuildingByIndex(int i, UObject* worldContextObject)
+{
+	// If invalid index, cancel the current selection
+	if (i < 0 || i > this->dataAsset->BuildingInfo.Num()) {
+		i = 0;
+	}
+	// Get the current building data using the index (0: nullptr; 1~Num: actual building).
+	FBuildingData* buildingData = i ? &this->dataAsset->BuildingInfo[i - 1] : nullptr;
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Building index: %d"), i));
+	// Now, we can get the value (if needed) and load the class synchronously.
+	this->SwitchSelectedBuilding(buildingData, worldContextObject);
+}
+
+void UGridManager::TempSwitchSelectedBuilding(bool forward, UObject* worldContextObject)
 {
 	static int i = 0;
 	if (!this->dataAsset) {
@@ -109,12 +132,10 @@ void UGridManager::TempSwitchSelectedBuilding(bool forward, AActor* ptrActor)
 	{
 		i = (i - 1 + count) % count; // Wrap around if index goes below 0.
 	}
-	FBuildingData* buildingData = i ? &dataAsset->BuildingInfo[i-1] : nullptr; // Get the current key using the index (0: nullptr; 1~Num: actual building).
-	// Now, we can get the value (if needed) and load the class synchronously.
-	this->SwitchSelectedBuilding(buildingData, ptrActor);
+	this->SwitchSelectedBuildingByIndex(i, worldContextObject);
 }
 
-void UGridManager::SwitchSelectedBuilding(FBuildingData* buildingData, AActor* ptrActor)
+void UGridManager::SwitchSelectedBuilding(FBuildingData* buildingData, UObject* worldContextObject)
 {
 	// Destroy current selection
 	if (this->_selectedBuilding)
@@ -131,31 +152,10 @@ void UGridManager::SwitchSelectedBuilding(FBuildingData* buildingData, AActor* p
 	}
 
 	// Otherwise find the building data and spawn a new building to be deployed
-	ABuilding* newBuilding = ptrActor->GetWorld()->SpawnActor<ABuilding>(buildingData->blueprint.LoadSynchronous());
+	ABuilding* newBuilding = worldContextObject->GetWorld()->SpawnActor<ABuilding>(buildingData->blueprint.LoadSynchronous());
 	newBuilding->data = buildingData;
 	this->_selectedBuilding = newBuilding;
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("Switched to building: %s"), *newBuilding->data->name.ToString()));
-
-	/*
-	//Note that TMap is not a sorted container, so the order of keys is not guaranteed,use itertor instead
-	//TODO: however, after we have a building UI, we can directly access specific building by indexing without iterating
-	static int i = 0;
-	if (!dataAsset || dataAsset->BuildingInfo.IsEmpty()) {
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No building data asset"));
-		return;
-	}
-
-	if (forward)
-	{
-		i = (i + 1) % dataAsset->BuildingInfo.Num();
-	}
-	else
-	{
-		i = (i - 1 + dataAsset->BuildingInfo.Num()) % dataAsset->BuildingInfo.Num();
-	}
-	TSoftClassPtr<ABuilding> CurrentKey = Keys[i]; // Get the current key using the index.
-		// Now, we can get the value (if needed) and load the class synchronously.
-	*/
 }	
 
 void UGridManager::DeploySelectedBuilding(AActor* ptrActor)
@@ -174,9 +174,9 @@ void UGridManager::DeploySelectedBuilding(AActor* ptrActor)
 
 			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(
 			//	TEXT("Remove building: <%d, %d>"), exactCoord.first, exactCoord.second));
-			ABuilding* OldBuilding = gridToBuilding.at(exactCoord);
-			RemoveBuilding(OldBuilding);
-			OldBuilding->Destroy();
+			ABuilding* oldBuilding = gridToBuilding.at(exactCoord);
+			RemoveBuilding(oldBuilding);
+			oldBuilding->Destroy();
 		}
 		else
 		{
@@ -185,12 +185,23 @@ void UGridManager::DeploySelectedBuilding(AActor* ptrActor)
 		return;
 	}
 
-	// Otherwise deploy the building
+	// Then check if money is enough
+	int money = UEconomy::Instance()->GetMoney();
+	if (money < this->_selectedBuilding->data->cost)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(
+			TEXT("Not enought money: Need %d, have %d"), this->_selectedBuilding->data->cost, money));
+		return;
+	}
+
+	// Deploy the building
 	int sizeX = this->_selectedBuilding->data->size_x;
 	int sizeY = this->_selectedBuilding->data->size_y;
 	GridCoord coord = this->_selectedBuilding->coord;
 	if (this->CheckEmpty(coord, sizeX, sizeY))
 	{
+		// Pay money
+		UEconomy::Instance()->RemoveMoney(this->_selectedBuilding->data->cost);
 		// Add building
 		AddBuilding(this->_selectedBuilding, true);
 		this->_selectedBuilding->SetDeployed(true);
