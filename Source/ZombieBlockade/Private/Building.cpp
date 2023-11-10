@@ -56,17 +56,6 @@ void ABuilding::BeginPlay()
 
 	for (UStaticMeshComponent* meshComponent : _meshComponents)
 	{
-		auto temp = meshComponent->GetMaterials();
-		if (temp.Num())
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(
-				TEXT("Static Mesh: %p, %d, %p"), meshComponent, temp.Num(), temp[0]));
-		}
-		else
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(
-				TEXT("Static Mesh: %p, %d"), meshComponent, temp.Num()));
-		}
 		this->meshComponents.Add({ meshComponent, meshComponent->GetMaterials() });
 	}
 
