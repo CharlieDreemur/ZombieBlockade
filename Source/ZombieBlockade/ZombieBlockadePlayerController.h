@@ -69,7 +69,6 @@ protected:
 	void OnTouchReleased();
 	void OnScrollForward();
 	void OnScrollBackward();
-	void OnSwitchSelectedBuilding(bool isScrollingUp);
 	void OnBuildStructureTriggered();
 
 private:
