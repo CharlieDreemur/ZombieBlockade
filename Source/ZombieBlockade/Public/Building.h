@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "GridManager.h"
+#include "ZombieBlockadeDataAsset.h"
+#include <string>
 #include "Building.generated.h"
 
 
@@ -17,13 +19,18 @@ public:
 	// Sets default values for this actor's properties
 	ABuilding();
 
-	GridCoord GetSize() const;
 	GridCoord coord;
-	GridCoord size;
+	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Building");
+	FBuildingData* data;
+	void SetDeployed(bool value);
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	// Whether the building is already deployed or is prepared to be deployed (spawned for preview)
+	float isDeployed;
+	TArray<UMaterialInstanceDynamic*> dynamicMaterials;
+	virtual void SetOpacity(float opacity);
 
 public:	
 	// Called every frame

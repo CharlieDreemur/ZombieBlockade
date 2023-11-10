@@ -4,7 +4,8 @@
 
 #include "CoreMinimal.h"
 #include <unordered_map>
-
+#include "ZombieBlockadeDataAsset.h"
+#include "GridManager.generated.h"
 
 class ABuilding;
 
@@ -19,36 +20,48 @@ struct Grid
 	GridCoord coord;
 };
 
-/// @todo Temp struct for storing information of next building
-struct BuildingInfo
-{
-	std::wstring name;
-	GridCoord size;
-};
 /**
  * 
  */
-class ZOMBIEBLOCKADE_API GridManager
+UCLASS()
+class ZOMBIEBLOCKADE_API UGridManager : public UObject
 {
-public:
+	GENERATED_BODY()
+	friend class UGameManager;
 
-	static GridManager& Instance();
+public:
+	UFUNCTION(BlueprintCallable, Category = "Grid Manager", DisplayName = "Grid Manager Instance")
+	static UGridManager* Instance();
+
+	UFUNCTION(BlueprintCallable, Category = "Grid Manager", DisplayName = "Grid Manager Reset")
+	static void reset();
 
 	float GetGridSize() const;
-	Grid GetGridFromCoord(float x, float y, const GridCoord& size = { 1, 1 }) const;
+	Grid GetGridFromCoord(float x, float y) const;
 
-	bool CheckEmpty(const GridCoord& coord, const GridCoord& size) const;
+	bool CheckEmpty(const GridCoord& coord, int sizeX, int sizeY) const;
 	bool AddBuilding(ABuilding* building, bool overwrite = false);
 	void RemoveBuilding(ABuilding* building);
 
-	void SelectBuilding(const BuildingInfo& newSelectedBuilding);
-	const BuildingInfo& GetSelectedBuilding() const;
+	void SetSelectedBuilding(ABuilding* newSelectedBuilding);
+	const ABuilding* GetSelectedBuilding() const;
 
-	std::unordered_map<GridCoord, ABuilding*, GridCoordHash> gridToBuilding;
+	UFUNCTION(BlueprintCallable, Category="Grid Manager", meta = (WorldContext = "worldContextObject"))
+	void SwitchSelectedBuildingByIndex(int id, UObject* worldContextObject);
+
+	// Temporary function for switching the selected building forward/backward
+	// In the future, the logic should take place in the building UI
+	void TempSwitchSelectedBuilding(bool forward, UObject* WorldContextObject);
+
+	void SwitchSelectedBuilding(FBuildingData* buildingData, UObject* worldContextObject);
+	void DeploySelectedBuilding(AActor* actor);
 
 private:
-	const float gridSize;
-	BuildingInfo selectedBuilding;
-	GridManager(float gridSize);
-	~GridManager();
+	UGridManager();
+
+	static UGridManager* _instance;
+
+	ABuilding* _selectedBuilding;
+	std::unordered_map<GridCoord, ABuilding*, GridCoordHash> gridToBuilding;
+	UZombieBlockadeDataAsset* dataAsset;
 };

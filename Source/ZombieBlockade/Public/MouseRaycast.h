@@ -16,10 +16,13 @@ public:
 	AMouseRaycast();
 
 	UFUNCTION(BlueprintCallable)
-	static FVector GetMouseRaycast(AActor* Actor);
+	static FVector GetMouseRaycast(AActor* actor);
 
 	UFUNCTION(BlueprintCallable)
-	static void OnMouseClick(AActor* TouchedActor, FKey ButtonClicked);
+	static FVector GetMouseRaycastToPlaneZ(AActor* actor, int planeZ = 0);
+
+	UFUNCTION(BlueprintCallable)
+	static void OnMouseClick(AActor* touchedActor, FKey buttonClicked);
 
 
 protected:
