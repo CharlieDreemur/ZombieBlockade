@@ -54,7 +54,7 @@ public:
 	void TempSwitchSelectedBuilding(bool forward, UObject* WorldContextObject);
 
 	void SwitchSelectedBuilding(FBuildingData* buildingData, UObject* worldContextObject);
-	void DeploySelectedBuilding(AActor* actor);
+	void DeploySelectedBuilding(UObject* worldContextObject);
 
 private:
 	UGridManager();

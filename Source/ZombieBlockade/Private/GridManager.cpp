@@ -110,7 +110,6 @@ void UGridManager::SwitchSelectedBuildingByIndex(int i, UObject* worldContextObj
 	}
 	// Get the current building data using the index (0: nullptr; 1~Num: actual building).
 	FBuildingData* buildingData = i ? &this->dataAsset->BuildingInfo[i - 1] : nullptr;
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Building index: %d"), i));
 	// Now, we can get the value (if needed) and load the class synchronously.
 	this->SwitchSelectedBuilding(buildingData, worldContextObject);
 }
@@ -147,7 +146,7 @@ void UGridManager::SwitchSelectedBuilding(FBuildingData* buildingData, UObject* 
 	// If pass in nullptr, do nothing
 	if (!buildingData)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Cancel build"));
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Cancel build"));
 		return;
 	}
 
@@ -155,13 +154,13 @@ void UGridManager::SwitchSelectedBuilding(FBuildingData* buildingData, UObject* 
 	ABuilding* newBuilding = worldContextObject->GetWorld()->SpawnActor<ABuilding>(buildingData->blueprint.LoadSynchronous());
 	newBuilding->data = buildingData;
 	this->_selectedBuilding = newBuilding;
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("Switched to building: %s"), *newBuilding->data->name.ToString()));
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("Switched to building: %s"), *newBuilding->data->name.ToString()));
 }	
 
-void UGridManager::DeploySelectedBuilding(AActor* ptrActor)
+void UGridManager::DeploySelectedBuilding(UObject* worldContextObject)
 {
 	// Mouse raycast
-	FVector hitLocation = AMouseRaycast::GetMouseRaycast(ptrActor);
+	FVector hitLocation = AMouseRaycast::GetMouseRaycast(worldContextObject);
 	GridCoord exactCoord = GetGridFromCoord(hitLocation.X, hitLocation.Y).coord;
 
 	// If nothing selected, check if should remove a building
@@ -205,7 +204,9 @@ void UGridManager::DeploySelectedBuilding(AActor* ptrActor)
 		// Add building
 		AddBuilding(this->_selectedBuilding, true);
 		this->_selectedBuilding->SetDeployed(true);
+		FBuildingData* buildingData = this->_selectedBuilding->data;
 		this->_selectedBuilding = nullptr;
+		this->SwitchSelectedBuilding(buildingData, worldContextObject);
 		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(
 		//	TEXT("Add building: <%d, %d>"), coord.first, coord.second));
 	}
