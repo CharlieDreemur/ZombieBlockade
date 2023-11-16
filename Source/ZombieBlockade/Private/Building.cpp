@@ -40,6 +40,7 @@ void ABuilding::BeginPlay()
 	{
 		// Do something with the material, such as creating a dynamic instance to change properties at runtime
 		UMaterialInstanceDynamic* dynamicMaterial = meshComponent->CreateDynamicMaterialInstance(0);
+		if (!dynamicMaterial) continue;
 		dynamicMaterial->SetScalarParameterValue(FName("Opacity"), 0.3);
 		this->dynamicMaterials.Add(dynamicMaterial);
 	}
@@ -52,6 +53,7 @@ void ABuilding::SetOpacity(float opacity)
 {
 	for (UMaterialInstanceDynamic* dynamicMaterial : this->dynamicMaterials)
 	{
+		if (!dynamicMaterial) continue;
 		// Do something with the material, such as creating a dynamic instance to change properties at runtime
 		dynamicMaterial->SetScalarParameterValue(FName("Opacity"), opacity);
 	}
