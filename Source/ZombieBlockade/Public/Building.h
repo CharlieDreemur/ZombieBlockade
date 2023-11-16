@@ -29,8 +29,8 @@ protected:
 	virtual void BeginPlay() override;
 	// Whether the building is already deployed or is prepared to be deployed (spawned for preview)
 	float isDeployed;
-	TArray<UMaterialInstanceDynamic*> dynamicMaterials;
-	virtual void SetOpacity(float opacity);
+	TMap<UStaticMeshComponent*, TArray<UMaterialInterface*>> meshComponents;
+	UMaterialInterface* previewMaterial;
 
 public:	
 	// Called every frame

@@ -5,7 +5,7 @@
 #include "MouseRaycast.h"
 
 // Sets default values
-ABuilding::ABuilding() : coord(0, 0), data(nullptr), isDeployed(false), dynamicMaterials()
+ABuilding::ABuilding() : coord(0, 0), data(nullptr), isDeployed(false), meshComponents(), previewMaterial(nullptr)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -16,13 +16,25 @@ void ABuilding::SetDeployed(bool value)
 	if (value)
 	{
 		this->isDeployed = true;
-		this->SetOpacity(1.0f);
+		for (auto& [meshComponent, originalMaterial] : this->meshComponents)
+		{
+			for (int i = 0; i < originalMaterial.Num(); i++)
+			{
+				meshComponent->SetMaterial(i, originalMaterial[i]);
+			}
+		}
 		this->SetActorEnableCollision(true);
 	}
 	else
 	{
 		this->isDeployed = false;
-		this->SetOpacity(0.5f);
+		for (auto& [meshComponent, originalMaterial] : this->meshComponents)
+		{
+			for (int i = 0; i < originalMaterial.Num(); i++)
+			{
+				meshComponent->SetMaterial(i, this->previewMaterial);
+			}
+		}
 		this->SetActorEnableCollision(false);
 	}
 }
@@ -33,30 +45,22 @@ void ABuilding::BeginPlay()
 	Super::BeginPlay();
 
 	// Find the static mesh components
-	TArray<UStaticMeshComponent*> meshComponents;
-	GetComponents<UStaticMeshComponent>(meshComponents);
+	TArray<UStaticMeshComponent*> _meshComponents;
+	GetComponents<UStaticMeshComponent>(_meshComponents);
 
-	for (UStaticMeshComponent* meshComponent : meshComponents)
+	// Find the preview material
+	//static ConstructorHelpers::FObjectFinder<UMaterialInterface> MaterialFinder(TEXT("Material'/Game/Materials/M_Preview.M_Preview'"));
+	//this->previewMaterial = MaterialFinder.Object;
+	this->previewMaterial = Cast<UMaterialInterface>(StaticLoadObject(
+		UMaterialInterface::StaticClass(), nullptr, TEXT("Material'/Game/Materials/M_Preview.M_Preview'")));
+
+	for (UStaticMeshComponent* meshComponent : _meshComponents)
 	{
-		// Do something with the material, such as creating a dynamic instance to change properties at runtime
-		UMaterialInstanceDynamic* dynamicMaterial = meshComponent->CreateDynamicMaterialInstance(0);
-		if (!dynamicMaterial) continue;
-		dynamicMaterial->SetScalarParameterValue(FName("Opacity"), 0.3);
-		this->dynamicMaterials.Add(dynamicMaterial);
+		this->meshComponents.Add({ meshComponent, meshComponent->GetMaterials() });
 	}
 
 	// Preview mode
 	this->SetDeployed(false);
-}
-
-void ABuilding::SetOpacity(float opacity)
-{
-	for (UMaterialInstanceDynamic* dynamicMaterial : this->dynamicMaterials)
-	{
-		if (!dynamicMaterial) continue;
-		// Do something with the material, such as creating a dynamic instance to change properties at runtime
-		dynamicMaterial->SetScalarParameterValue(FName("Opacity"), opacity);
-	}
 }
 
 // Called every frame
