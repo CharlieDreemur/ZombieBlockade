@@ -30,7 +30,7 @@ class ZOMBIEBLOCKADE_API UGridManager : public UObject
 	friend class UGameManager;
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "Grid Manager", DisplayName = "Grid Manager Instance")
+	UFUNCTION(BlueprintPure, Category = "Grid Manager", DisplayName = "Grid Manager Instance")
 	static UGridManager* Instance();
 
 	UFUNCTION(BlueprintCallable, Category = "Grid Manager", DisplayName = "Grid Manager Reset")
@@ -42,6 +42,9 @@ public:
 	bool CheckEmpty(const GridCoord& coord, int sizeX, int sizeY) const;
 	bool AddBuilding(ABuilding* building, bool overwrite = false);
 	void RemoveBuilding(ABuilding* building);
+
+	UFUNCTION(BlueprintPure, Category = "Grid Manager", DisplayName = "Find Nearest Building")
+	ABuilding* FindNearestBuilding(FVector2D location) const;
 
 	void SetSelectedBuilding(ABuilding* newSelectedBuilding);
 	const ABuilding* GetSelectedBuilding() const;
@@ -63,5 +66,6 @@ private:
 
 	ABuilding* _selectedBuilding;
 	std::unordered_map<GridCoord, ABuilding*, GridCoordHash> gridToBuilding;
+	std::vector<ABuilding*> buildings;
 	UZombieBlockadeDataAsset* dataAsset;
 };
