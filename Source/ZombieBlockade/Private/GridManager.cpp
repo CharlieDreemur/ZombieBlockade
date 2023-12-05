@@ -95,33 +95,38 @@ void UGridManager::RemoveBuilding(ABuilding* building)
 }
 
 // Helper function
-float GetDistance(ABuilding* building, FVector2D location, float gridSize) {
-	auto [x, y] = building->coord;
+float GetDistance(ABuilding* building, double x, double y, float gridSize) {
+	auto [x_, y_] = building->coord;
 	int w = building->data->size_x;
 	int h = building->data->size_y;
 	// Calculate actual coordinates
-	float minX = x * gridSize;
-	float maxX = (x + w) * gridSize;
-	float minY = y * gridSize;
-	float maxY = (y + w) * gridSize;
+	float minX = x_ * gridSize;
+	float maxX = (x_ + w) * gridSize;
+	float minY = y_ * gridSize;
+	float maxY = (y_ + w) * gridSize;
 	// Calculate distance
-	float distX = std::max(0.0, std::max(minX - location.X, location.X - maxX));
-	float distY = std::max(0.0, std::max(minY - location.Y, location.Y - maxY));
+	float distX = std::max(0.0, std::max(minX - x, x - maxX));
+	float distY = std::max(0.0, std::max(minY - y, y - maxY));
 	return std::sqrt(distX * distX + distY * distY);
 }
 
-ABuilding* UGridManager::FindNearestBuilding(FVector2D location) const
+ABuilding* UGridManager::FindNearestBuilding(double x, double y) const
 {
 	if (this->buildings.empty()) return nullptr;
+	int i = 0, j = 0;
 	ABuilding* nearest = this->buildings[0];
-	float minDist = GetDistance(nearest, location, this->dataAsset->gridSize);
+	float minDist = GetDistance(nearest, x, y, this->dataAsset->gridSize);
 	for (ABuilding* building : this->buildings) {
-		float dist = GetDistance(building, location, this->dataAsset->gridSize);
+		float dist = GetDistance(building, x, y, this->dataAsset->gridSize);
 		if (dist < minDist) {
 			nearest = building;
 			minDist = dist;
+			i = j;
 		}
+		j++;
 	}
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(
+		TEXT("Num buildings: %d, Index: %d, Dist: %f"), this->buildings.size(), i, minDist));
 	return nearest;
 }
 

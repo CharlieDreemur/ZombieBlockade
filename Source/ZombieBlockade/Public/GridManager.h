@@ -44,7 +44,7 @@ public:
 	void RemoveBuilding(ABuilding* building);
 
 	UFUNCTION(BlueprintPure, Category = "Grid Manager", DisplayName = "Find Nearest Building")
-	ABuilding* FindNearestBuilding(FVector2D location) const;
+	ABuilding* FindNearestBuilding(double x, double y) const;
 
 	void SetSelectedBuilding(ABuilding* newSelectedBuilding);
 	const ABuilding* GetSelectedBuilding() const;
