@@ -24,11 +24,15 @@ public:
 	FBuildingData* data;
 	void SetDeployed(bool value);
 
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
+		class AController* EventInstigator, AActor* DamageCauser) override;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	// Whether the building is already deployed or is prepared to be deployed (spawned for preview)
 	float isDeployed;
+	int currentHealth;
 	TMap<UStaticMeshComponent*, TArray<UMaterialInterface*>> meshComponents;
 	UMaterialInterface* previewMaterial;
 
