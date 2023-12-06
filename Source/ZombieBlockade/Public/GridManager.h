@@ -20,6 +20,23 @@ struct Grid
 	GridCoord coord;
 };
 
+class Regions {
+public:
+	Regions(const std::vector<ABuilding*>& buildings, const std::unordered_map<GridCoord, ABuilding*, GridCoordHash>& gridToBuilding);
+
+	bool AreConnected(GridCoord coord1, GridCoord coord2);
+
+private:
+	bool InRange(GridCoord coord) const;
+	int CoordToInt(GridCoord coord) const;
+	GridCoord IntToCoord(int index) const;
+
+	bool Union(int index1, int index2);
+	int Find(int index);
+	int minX, minY, w, h;
+	std::vector<int> tree;
+};
+
 /**
  * 
  */
@@ -30,7 +47,7 @@ class ZOMBIEBLOCKADE_API UGridManager : public UObject
 	friend class UGameManager;
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "Grid Manager", DisplayName = "Grid Manager Instance")
+	UFUNCTION(BlueprintPure, Category = "Grid Manager", DisplayName = "Grid Manager Instance")
 	static UGridManager* Instance();
 
 	UFUNCTION(BlueprintCallable, Category = "Grid Manager", DisplayName = "Grid Manager Reset")
@@ -42,6 +59,12 @@ public:
 	bool CheckEmpty(const GridCoord& coord, int sizeX, int sizeY) const;
 	bool AddBuilding(ABuilding* building, bool overwrite = false);
 	void RemoveBuilding(ABuilding* building);
+
+	UFUNCTION(BlueprintPure, Category = "Grid Manager", DisplayName = "Find Nearest Building")
+	ABuilding* FindNearestBuilding(FVector2D src) const;
+
+	UFUNCTION(BlueprintPure, Category = "Grid Manager", DisplayName = "Can Reach Location")
+	bool CanReachLocation(FVector2D src, FVector2D dest) const;
 
 	void SetSelectedBuilding(ABuilding* newSelectedBuilding);
 	const ABuilding* GetSelectedBuilding() const;
@@ -63,5 +86,8 @@ private:
 
 	ABuilding* _selectedBuilding;
 	std::unordered_map<GridCoord, ABuilding*, GridCoordHash> gridToBuilding;
+	std::vector<ABuilding*> buildings;
+	Regions* regions;
+
 	UZombieBlockadeDataAsset* dataAsset;
 };
