@@ -20,6 +20,23 @@ struct Grid
 	GridCoord coord;
 };
 
+class Regions {
+public:
+	Regions(const std::vector<ABuilding*>& buildings, const std::unordered_map<GridCoord, ABuilding*, GridCoordHash>& gridToBuilding);
+
+	bool AreConnected(GridCoord coord1, GridCoord coord2);
+
+private:
+	bool InRange(GridCoord coord) const;
+	int CoordToInt(GridCoord coord) const;
+	GridCoord IntToCoord(int index) const;
+
+	bool Union(int index1, int index2);
+	int Find(int index);
+	int minX, minY, w, h;
+	std::vector<int> tree;
+};
+
 /**
  * 
  */
@@ -44,7 +61,10 @@ public:
 	void RemoveBuilding(ABuilding* building);
 
 	UFUNCTION(BlueprintPure, Category = "Grid Manager", DisplayName = "Find Nearest Building")
-	ABuilding* FindNearestBuilding(double x, double y) const;
+	ABuilding* FindNearestBuilding(FVector2D src) const;
+
+	UFUNCTION(BlueprintPure, Category = "Grid Manager", DisplayName = "Can Reach Location")
+	bool CanReachLocation(FVector2D src, FVector2D dest) const;
 
 	void SetSelectedBuilding(ABuilding* newSelectedBuilding);
 	const ABuilding* GetSelectedBuilding() const;
@@ -67,5 +87,7 @@ private:
 	ABuilding* _selectedBuilding;
 	std::unordered_map<GridCoord, ABuilding*, GridCoordHash> gridToBuilding;
 	std::vector<ABuilding*> buildings;
+	Regions* regions;
+
 	UZombieBlockadeDataAsset* dataAsset;
 };

@@ -2,6 +2,7 @@
 
 
 #include "Building.h"
+#include "GridManager.h"
 #include "MouseRaycast.h"
 
 // Sets default values
@@ -16,6 +17,7 @@ void ABuilding::SetDeployed(bool value)
 	if (value)
 	{
 		this->isDeployed = true;
+		this->currentHealth = this->data->health;
 		for (auto& [meshComponent, originalMaterial] : this->meshComponents)
 		{
 			for (int i = 0; i < originalMaterial.Num(); i++)
@@ -37,6 +39,22 @@ void ABuilding::SetDeployed(bool value)
 		}
 		this->SetActorEnableCollision(false);
 	}
+}
+
+float ABuilding::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	int actualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	if (!this->isDeployed) return actualDamage;
+
+	// Apply the damage
+	this->currentHealth = std::min(0, this->currentHealth - actualDamage);
+	if (this->currentHealth == 0)
+	{
+		UGridManager::Instance()->RemoveBuilding(this);
+		if (this) this->Destroy();
+	}
+
+	return actualDamage;
 }
 
 // Called when the game starts or when spawned
