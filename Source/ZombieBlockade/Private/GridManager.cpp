@@ -77,18 +77,18 @@ bool Regions::AreConnected(GridCoord coord1, GridCoord coord2)
 {
 	if (this->w * this->h == 0) return true;
 	bool result = this->Find(this->CoordToInt(coord1)) == this->Find(this->CoordToInt(coord2));
-	if (result)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(
-			TEXT("Src: <%d, %d>, Dist: <%d, %d>, Can reach"),
-			coord1.first - minX, coord1.second - minY, coord2.first - minX, coord2.second - minY));
-	}
-	else
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(
-			TEXT("Src: <%d, %d>, Dist: <%d, %d>, Cannot reach"),
-			coord1.first - minX, coord1.second - minY, coord2.first - minX, coord2.second - minY));
-	}
+	//if (result)
+	//{
+	//	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(
+	//		TEXT("Src: <%d, %d>, Dist: <%d, %d>, Can reach"),
+	//		coord1.first - minX, coord1.second - minY, coord2.first - minX, coord2.second - minY));
+	//}
+	//else
+	//{
+	//	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(
+	//		TEXT("Src: <%d, %d>, Dist: <%d, %d>, Cannot reach"),
+	//		coord1.first - minX, coord1.second - minY, coord2.first - minX, coord2.second - minY));
+	//}
 	return result;
 }
 
