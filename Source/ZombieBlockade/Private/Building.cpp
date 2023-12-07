@@ -6,7 +6,8 @@
 #include "MouseRaycast.h"
 
 // Sets default values
-ABuilding::ABuilding() : coord(0, 0), data(nullptr), isDeployed(false), currentLevel(0), currentHealth(1), widgetComponents(), meshComponents(), previewMaterial(nullptr)
+ABuilding::ABuilding() : coord(0, 0), data(nullptr), isDeployed(false), currentLevel(0), currentHealth(1),
+	widgetComponents(), meshComponents(), previewMaterial(nullptr)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -36,6 +37,16 @@ int ABuilding::GetCurrentHealth() const
 int ABuilding::GetMaxHealth() const
 {
 	return this->data->levels[this->currentLevel].health;
+}
+
+int ABuilding::SetCurrentHealth(int health)
+{
+	this->currentHealth = std::max(std::min(health, this->GetMaxHealth()), 0);
+	if (this->currentHealth == 0)
+	{
+		UGridManager::Instance()->RemoveBuilding(this);
+		if (this) this->Destroy();
+	}
 }
 
 void ABuilding::SetDeployed(bool value)
@@ -91,13 +102,7 @@ float ABuilding::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
 	if (!this->isDeployed) return actualDamage;
 
 	// Apply the damage
-	this->currentHealth = std::max(0, this->currentHealth - actualDamage);
-	if (this->currentHealth == 0)
-	{
-		UGridManager::Instance()->RemoveBuilding(this);
-		if (this) this->Destroy();
-	}
-
+	this->SetCurrentHealth(this->currentHealth - actualDamage);
 	return actualDamage;
 }
 
