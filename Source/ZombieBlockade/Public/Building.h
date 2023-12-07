@@ -52,6 +52,7 @@ public:
 	void SetCurrentHealth(int health);
 
 	void SetDeployed(bool value);
+	void SetHighlight(bool value);
 
 	/**
 	 * Level up the building if possible. Does not spend money.

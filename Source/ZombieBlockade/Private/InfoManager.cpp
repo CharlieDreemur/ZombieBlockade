@@ -40,10 +40,7 @@ void UInfoManager::SetSelectedBuilding(ABuilding* building)
 	// Cancel highlight of current building
 	if (this->selectedBuilding)
 	{
-		for (auto [component, _] : this->selectedBuilding->meshComponents)
-		{
-			component->SetRenderCustomDepth(false);
-		}
+		this->selectedBuilding->SetHighlight(false);
 	}
 	this->selectedBuilding = building;
 }
