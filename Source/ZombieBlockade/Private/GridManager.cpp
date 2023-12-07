@@ -379,10 +379,10 @@ void UGridManager::DeploySelectedBuilding(UObject* worldContextObject)
 
 	// Then check if money is enough
 	int money = UEconomy::Instance()->GetMoney();
-	if (money < this->_selectedBuilding->data->cost)
+	if (money < this->_selectedBuilding->data->levels[0].cost)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(
-			TEXT("Not enought money: Need %d, have %d"), this->_selectedBuilding->data->cost, money));
+			TEXT("Not enought money: Need %d, have %d"), this->_selectedBuilding->data->levels[0].cost, money));
 		return;
 	}
 
@@ -393,7 +393,7 @@ void UGridManager::DeploySelectedBuilding(UObject* worldContextObject)
 	if (this->CheckEmpty(coord, sizeX, sizeY))
 	{
 		// Pay money
-		UEconomy::Instance()->RemoveMoney(this->_selectedBuilding->data->cost);
+		UEconomy::Instance()->RemoveMoney(this->_selectedBuilding->data->levels[0].cost);
 		// Add building
 		AddBuilding(this->_selectedBuilding, true);
 		this->_selectedBuilding->SetDeployed(true);
