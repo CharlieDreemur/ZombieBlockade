@@ -6,10 +6,31 @@
 #include "MouseRaycast.h"
 
 // Sets default values
-ABuilding::ABuilding() : coord(0, 0), data(nullptr), isDeployed(false), meshComponents(), previewMaterial(nullptr)
+ABuilding::ABuilding() : coord(0, 0), data(nullptr), isDeployed(false), currentLevel(0), currentHealth(1), widgetComponents(), meshComponents(), previewMaterial(nullptr)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+}
+
+int ABuilding::GetCurrentLevel() const
+{
+	return this->currentLevel;
+}
+
+int ABuilding::GetCostToUpgrade() const
+{
+	if (this->currentLevel + 1 == this->data->levels.Num()) return -1;
+	return this->data->levels[this->currentLevel + 1].cost;
+}
+
+int ABuilding::GetCurrentHealth() const
+{
+	return this->currentHealth;
+}
+
+int ABuilding::GetMaxHealth() const
+{
+	return this->data->levels[this->currentLevel].health;
 }
 
 void ABuilding::SetDeployed(bool value)
@@ -17,13 +38,17 @@ void ABuilding::SetDeployed(bool value)
 	if (value)
 	{
 		this->isDeployed = true;
-		this->currentHealth = this->data->health;
+		this->currentHealth = this->data->levels[this->currentLevel].health;
 		for (auto& [meshComponent, originalMaterial] : this->meshComponents)
 		{
 			for (int i = 0; i < originalMaterial.Num(); i++)
 			{
 				meshComponent->SetMaterial(i, originalMaterial[i]);
 			}
+		}
+		for (UWidgetComponent* widgetComponent : this->widgetComponents)
+		{
+			widgetComponent->SetVisibility(true);
 		}
 		this->SetActorEnableCollision(true);
 	}
@@ -37,8 +62,20 @@ void ABuilding::SetDeployed(bool value)
 				meshComponent->SetMaterial(i, this->previewMaterial);
 			}
 		}
+		for (UWidgetComponent* widgetComponent : this->widgetComponents)
+		{
+			widgetComponent->SetVisibility(false);
+		}
 		this->SetActorEnableCollision(false);
 	}
+}
+
+bool ABuilding::LevelUp()
+{
+	if (this->currentLevel + 1 == this->data->levels.Num()) return false;
+	this->currentLevel++;
+	this->currentHealth = this->data->levels[this->currentLevel].health;
+	return true;
 }
 
 float ABuilding::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -76,6 +113,9 @@ void ABuilding::BeginPlay()
 	{
 		this->meshComponents.Add({ meshComponent, meshComponent->GetMaterials() });
 	}
+
+	// Find the widget components
+	GetComponents<UWidgetComponent>(widgetComponents);
 
 	// Preview mode
 	this->SetDeployed(false);
