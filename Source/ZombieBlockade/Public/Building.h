@@ -43,8 +43,8 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Building", DisplayName = "Get Max Health")
 	int GetMaxHealth() const;
 
-	UFUNCTION(BlueprintPure, Category = "Building", DisplayName = "Set Current Health")
-	int SetCurrentHealth(int health);
+	UFUNCTION(BlueprintCallable, Category = "Building", DisplayName = "Set Current Health")
+	void SetCurrentHealth(int health);
 
 	void SetDeployed(bool value);
 

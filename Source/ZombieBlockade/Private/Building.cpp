@@ -39,7 +39,7 @@ int ABuilding::GetMaxHealth() const
 	return this->data->levels[this->currentLevel].health;
 }
 
-int ABuilding::SetCurrentHealth(int health)
+void ABuilding::SetCurrentHealth(int health)
 {
 	this->currentHealth = std::max(std::min(health, this->GetMaxHealth()), 0);
 	if (this->currentHealth == 0)
@@ -97,8 +97,8 @@ bool ABuilding::LevelUp()
 float ABuilding::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	int actualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(
-		TEXT("Damage to building: %d"), actualDamage));
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(
+	//	TEXT("Damage to building: %d"), actualDamage));
 	if (!this->isDeployed) return actualDamage;
 
 	// Apply the damage
