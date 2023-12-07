@@ -24,7 +24,7 @@ void UEconomy::reset()
 	}
 }
 
-int UEconomy::GetMoney()
+int UEconomy::GetMoney() const
 {
 	return this->money;
 }
@@ -44,6 +44,16 @@ void UEconomy::RemoveMoney(int value)
 	this->money -= value;
 }
 
-UEconomy::UEconomy() : money(500)
+int UEconomy::GetScore() const
+{
+	return this->score;
+}
+
+void UEconomy::AddScore(int value)
+{
+	this->score += value;
+}
+
+UEconomy::UEconomy() : money(500), score(0)
 {
 }

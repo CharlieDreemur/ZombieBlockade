@@ -24,5 +24,4 @@ private:
 
 	UFUNCTION()
 	void OnMouseLeave(UPrimitiveComponent* TouchedComponent);
-	UPrimitiveComponent* TargetComponent;
 };

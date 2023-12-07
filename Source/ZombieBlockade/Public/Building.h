@@ -8,6 +8,7 @@
 #include "ZombieBlockadeDataAsset.h"
 #include <string>
 #include "Components/WidgetComponent.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "Building.generated.h"
 
 
@@ -23,6 +24,9 @@ public:
 	GridCoord coord;
 	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Building");
 	FBuildingData* data;
+
+	UFUNCTION(BlueprintPure, Category = "Building", DisplayName = "Get Data")
+	FBuildingData& GetData() const;
 
 	UFUNCTION(BlueprintPure, Category = "Building", DisplayName = "Get Center Location")
 	FVector GetCenterLocation() const;
@@ -54,6 +58,7 @@ public:
 	void SetDeployed(bool value);
 	void SetHighlight(bool value);
 
+	void ChangeMaterialColor(FLinearColor color);
 	/**
 	 * Level up the building if possible. Does not spend money.
 	 * Returns true if level up successfully. Otherwise (already max level) returns false.
@@ -74,6 +79,7 @@ protected:
 	TArray<UWidgetComponent*> widgetComponents;
 	UWidgetComponent* healthBar;
 	UMaterialInterface* previewMaterial;
+
 
 public:
 	TMap<UStaticMeshComponent*, TArray<UMaterialInterface*>> meshComponents;
