@@ -3,6 +3,7 @@
 
 #include "Building.h"
 #include "GridManager.h"
+#include "InfoManager.h"
 #include "MouseRaycast.h"
 
 // Sets default values
@@ -50,6 +51,10 @@ void ABuilding::SetCurrentHealth(int health)
 	if (this->currentHealth == 0)
 	{
 		UGridManager::Instance()->RemoveBuilding(this);
+		if (UInfoManager::Instance()->GetSelectedBuilding() == this)
+		{
+			UInfoManager::Instance()->SetSelectedBuilding(nullptr);
+		}
 		if (this) this->Destroy();
 	}
 	if (this->healthBar)
