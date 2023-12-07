@@ -34,6 +34,8 @@ struct FBuildingData
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Config")
 	int size_y;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Config")
+	FString discription;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Config")
 	TArray<FLevelData> levels;
 };
 
