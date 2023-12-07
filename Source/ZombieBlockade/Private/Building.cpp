@@ -20,7 +20,7 @@ FVector ABuilding::GetCenterLocation() const
 
 int ABuilding::GetCurrentLevel() const
 {
-	return this->currentLevel;
+	return this->currentLevel+1;
 }
 
 int ABuilding::GetCostToUpgrade() const
@@ -39,6 +39,11 @@ int ABuilding::GetMaxHealth() const
 	return this->data->levels[this->currentLevel].health;
 }
 
+float ABuilding::GetHealthPercentage() const
+{
+	return (float)this->currentHealth / this->GetMaxHealth();
+}
+
 void ABuilding::SetCurrentHealth(int health)
 {
 	this->currentHealth = std::max(std::min(health, this->GetMaxHealth()), 0);
@@ -54,10 +59,7 @@ void ABuilding::SetCurrentHealth(int health)
 }
 
 void ABuilding::AddHealth(int health) {
-	int newHealth = this->currentHealth + health;
-	//if (health > max) health = max;
-	if (newHealth > this->GetMaxHealth()) newHealth = this->GetMaxHealth();
-	this->SetCurrentHealth(newHealth);
+	this->SetCurrentHealth(this->currentHealth + health);
 }
 
 void ABuilding::SetDeployed(bool value)
