@@ -372,9 +372,9 @@ void UGridManager::DeploySelectedBuilding(UObject* worldContextObject)
 
 			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(
 			//	TEXT("Remove building: <%d, %d>"), exactCoord.first, exactCoord.second));
-			ABuilding* oldBuilding = gridToBuilding.at(exactCoord);
-			RemoveBuilding(oldBuilding);
-			oldBuilding->Destroy();
+			//ABuilding* oldBuilding = gridToBuilding.at(exactCoord);
+			//RemoveBuilding(oldBuilding);
+			//oldBuilding->Destroy();
 		}
 		else
 		{
