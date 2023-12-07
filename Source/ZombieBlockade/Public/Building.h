@@ -69,6 +69,7 @@ protected:
 	int currentLevel;
 	int currentHealth;
 	TArray<UWidgetComponent*> widgetComponents;
+	UWidgetComponent* healthBar;
 	TMap<UStaticMeshComponent*, TArray<UMaterialInterface*>> meshComponents;
 	UMaterialInterface* previewMaterial;
 

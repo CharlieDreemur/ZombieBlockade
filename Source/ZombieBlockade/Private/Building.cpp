@@ -47,6 +47,10 @@ void ABuilding::SetCurrentHealth(int health)
 		UGridManager::Instance()->RemoveBuilding(this);
 		if (this) this->Destroy();
 	}
+	if (this->healthBar)
+	{
+		this->healthBar->SetVisibility(this->currentHealth != this->GetMaxHealth());
+	}
 }
 
 void ABuilding::AddHealth(int health) {
@@ -61,7 +65,6 @@ void ABuilding::SetDeployed(bool value)
 	if (value)
 	{
 		this->isDeployed = true;
-		this->currentHealth = this->data->levels[this->currentLevel].health;
 		for (auto& [meshComponent, originalMaterial] : this->meshComponents)
 		{
 			for (int i = 0; i < originalMaterial.Num(); i++)
@@ -74,6 +77,7 @@ void ABuilding::SetDeployed(bool value)
 			widgetComponent->SetVisibility(true);
 		}
 		this->SetActorEnableCollision(true);
+		this->SetCurrentHealth(this->data->levels[this->currentLevel].health);
 	}
 	else
 	{
@@ -135,6 +139,13 @@ void ABuilding::BeginPlay()
 
 	// Find the widget components
 	GetComponents<UWidgetComponent>(widgetComponents);
+	for (UWidgetComponent* widgetComponent : widgetComponents)
+	{
+		if (widgetComponent->GetName() == "HealthBar")
+		{
+			this->healthBar = widgetComponent;
+		}
+	}
 
 	// Preview mode
 	this->SetDeployed(false);
