@@ -90,6 +90,14 @@ void ABuilding::SetDeployed(bool value)
 	}
 }
 
+void ABuilding::SetHighlight(bool value)
+{
+	for (auto [component, _] : this->meshComponents)
+	{
+		component->SetRenderCustomDepth(value);
+	}
+}
+
 bool ABuilding::LevelUp()
 {
 	if (this->currentLevel + 1 == this->data->levels.Num()) return false;

@@ -38,13 +38,18 @@ void UClickableComponent::BeginPlay()
 
 void UClickableComponent::OnMouseEnter(UPrimitiveComponent* TouchedComponent)
 {
-	TouchedComponent->SetRenderCustomDepth(true);
+	auto* owner = dynamic_cast<ABuilding*>(GetOwner());
+	if (owner != UInfoManager::Instance()->GetSelectedBuilding())
+	{
+		owner->SetHighlight(true);
+	}
 }
 
 void UClickableComponent::OnMouseLeave(UPrimitiveComponent* TouchedComponent)
 {
-	if (GetOwner() != UInfoManager::Instance()->GetSelectedBuilding())
+	auto* owner = dynamic_cast<ABuilding*>(GetOwner());
+	if (owner != UInfoManager::Instance()->GetSelectedBuilding())
 	{
-		TouchedComponent->SetRenderCustomDepth(false);
+		owner->SetHighlight(false);
 	}
 }
