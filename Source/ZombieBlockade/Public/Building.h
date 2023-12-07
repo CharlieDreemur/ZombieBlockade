@@ -30,6 +30,8 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Building", DisplayName = "Get Current Level")
 	int GetCurrentLevel() const;
 
+	UFUNCTION(BlueprintPure, Category = "Building", DisplayName = "Get Health Percentage")
+	float GetHealthPercentage() const;
 	/**
 	 * Return value >= 0: Cost to upgrade
 	 * Return value == -1: Already max level
@@ -42,6 +44,9 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Building", DisplayName = "Get Max Health")
 	int GetMaxHealth() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Building", DisplayName = "Add Health")
+	void AddHealth(int health);
 
 	UFUNCTION(BlueprintCallable, Category = "Building", DisplayName = "Set Current Health")
 	void SetCurrentHealth(int health);
