@@ -5,6 +5,7 @@
 #include "GridManager.h"
 #include "InfoManager.h"
 #include "MouseRaycast.h"
+#include "Materials/MaterialInstanceDynamic.h"
 
 // Sets default values
 ABuilding::ABuilding() : coord(0, 0), data(nullptr), isDeployed(false), currentLevel(0), currentHealth(1),
@@ -122,8 +123,32 @@ bool ABuilding::LevelUp()
 	if (this->currentLevel + 1 == this->data->levels.Num()) return false;
 	this->currentLevel++;
 	this->currentHealth = this->data->levels[this->currentLevel].health;
+
+	//Set dynamica material
+	//Blue
+	ChangeMaterialColor(FLinearColor(0, 1, 0, 1));
+
 	return true;
 }
+
+void ABuilding::ChangeMaterialColor(FLinearColor color)
+{
+	for (auto [component, _] : this->meshComponents)
+	{
+		//Iterate materials
+		for (int i = 0; i < component->GetNumMaterials(); i++)
+		{
+			//Get material
+			UMaterialInterface* material = component->GetMaterial(i);
+			//Change Color to Red
+			UMaterialInstanceDynamic* dynamicMat = UMaterialInstanceDynamic::Create(material, component);
+			dynamicMat->SetVectorParameterValue("Color", color);
+			//Set dynamic material
+			component->SetMaterial(i, dynamicMat);
+		}
+	}
+
+}	
 
 float ABuilding::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
