@@ -49,6 +49,13 @@ void ABuilding::SetCurrentHealth(int health)
 	}
 }
 
+void ABuilding::AddHealth(int health) {
+	int newHealth = this->currentHealth + health;
+	//if (health > max) health = max;
+	if (newHealth > this->GetMaxHealth()) newHealth = this->GetMaxHealth();
+	this->SetCurrentHealth(newHealth);
+}
+
 void ABuilding::SetDeployed(bool value)
 {
 	if (value)
