@@ -2,13 +2,51 @@
 
 
 #include "Building.h"
+#include "GridManager.h"
 #include "MouseRaycast.h"
 
 // Sets default values
-ABuilding::ABuilding() : coord(0, 0), data(nullptr), isDeployed(false), meshComponents(), previewMaterial(nullptr)
+ABuilding::ABuilding() : coord(0, 0), data(nullptr), isDeployed(false), currentLevel(0), currentHealth(1),
+	widgetComponents(), meshComponents(), previewMaterial(nullptr)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+}
+
+FVector ABuilding::GetCenterLocation() const
+{
+	return this->GetActorLocation() + FVector(0.5 * this->data->size_x, 0.5 * this->data->size_y, 0);
+}
+
+int ABuilding::GetCurrentLevel() const
+{
+	return this->currentLevel;
+}
+
+int ABuilding::GetCostToUpgrade() const
+{
+	if (this->currentLevel + 1 == this->data->levels.Num()) return -1;
+	return this->data->levels[this->currentLevel + 1].cost;
+}
+
+int ABuilding::GetCurrentHealth() const
+{
+	return this->currentHealth;
+}
+
+int ABuilding::GetMaxHealth() const
+{
+	return this->data->levels[this->currentLevel].health;
+}
+
+void ABuilding::SetCurrentHealth(int health)
+{
+	this->currentHealth = std::max(std::min(health, this->GetMaxHealth()), 0);
+	if (this->currentHealth == 0)
+	{
+		UGridManager::Instance()->RemoveBuilding(this);
+		if (this) this->Destroy();
+	}
 }
 
 void ABuilding::SetDeployed(bool value)
@@ -16,12 +54,17 @@ void ABuilding::SetDeployed(bool value)
 	if (value)
 	{
 		this->isDeployed = true;
+		this->currentHealth = this->data->levels[this->currentLevel].health;
 		for (auto& [meshComponent, originalMaterial] : this->meshComponents)
 		{
 			for (int i = 0; i < originalMaterial.Num(); i++)
 			{
 				meshComponent->SetMaterial(i, originalMaterial[i]);
 			}
+		}
+		for (UWidgetComponent* widgetComponent : this->widgetComponents)
+		{
+			widgetComponent->SetVisibility(true);
 		}
 		this->SetActorEnableCollision(true);
 	}
@@ -35,8 +78,32 @@ void ABuilding::SetDeployed(bool value)
 				meshComponent->SetMaterial(i, this->previewMaterial);
 			}
 		}
+		for (UWidgetComponent* widgetComponent : this->widgetComponents)
+		{
+			widgetComponent->SetVisibility(false);
+		}
 		this->SetActorEnableCollision(false);
 	}
+}
+
+bool ABuilding::LevelUp()
+{
+	if (this->currentLevel + 1 == this->data->levels.Num()) return false;
+	this->currentLevel++;
+	this->currentHealth = this->data->levels[this->currentLevel].health;
+	return true;
+}
+
+float ABuilding::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	int actualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(
+	//	TEXT("Damage to building: %d"), actualDamage));
+	if (!this->isDeployed) return actualDamage;
+
+	// Apply the damage
+	this->SetCurrentHealth(this->currentHealth - actualDamage);
+	return actualDamage;
 }
 
 // Called when the game starts or when spawned
@@ -58,6 +125,9 @@ void ABuilding::BeginPlay()
 	{
 		this->meshComponents.Add({ meshComponent, meshComponent->GetMaterials() });
 	}
+
+	// Find the widget components
+	GetComponents<UWidgetComponent>(widgetComponents);
 
 	// Preview mode
 	this->SetDeployed(false);
