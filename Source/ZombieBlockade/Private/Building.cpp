@@ -14,6 +14,11 @@ ABuilding::ABuilding() : coord(0, 0), data(nullptr), isDeployed(false), currentL
 	PrimaryActorTick.bCanEverTick = true;
 }
 
+FBuildingData& ABuilding::GetData() const
+{
+	return *this->data;
+}
+
 FVector ABuilding::GetCenterLocation() const
 {
 	return this->GetActorLocation() + FVector(0.5 * this->data->size_x, 0.5 * this->data->size_y, 0);
