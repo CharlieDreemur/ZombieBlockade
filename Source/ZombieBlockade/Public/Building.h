@@ -52,6 +52,7 @@ public:
 	void SetCurrentHealth(int health);
 
 	void SetDeployed(bool value);
+	void SetHighlight(bool value);
 
 	/**
 	 * Level up the building if possible. Does not spend money.
@@ -72,10 +73,10 @@ protected:
 	int currentHealth;
 	TArray<UWidgetComponent*> widgetComponents;
 	UWidgetComponent* healthBar;
-	TMap<UStaticMeshComponent*, TArray<UMaterialInterface*>> meshComponents;
 	UMaterialInterface* previewMaterial;
 
-public:	
+public:
+	TMap<UStaticMeshComponent*, TArray<UMaterialInterface*>> meshComponents;
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
