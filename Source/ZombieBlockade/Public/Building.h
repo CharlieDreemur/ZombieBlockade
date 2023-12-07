@@ -72,10 +72,10 @@ protected:
 	int currentHealth;
 	TArray<UWidgetComponent*> widgetComponents;
 	UWidgetComponent* healthBar;
-	TMap<UStaticMeshComponent*, TArray<UMaterialInterface*>> meshComponents;
 	UMaterialInterface* previewMaterial;
 
-public:	
+public:
+	TMap<UStaticMeshComponent*, TArray<UMaterialInterface*>> meshComponents;
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

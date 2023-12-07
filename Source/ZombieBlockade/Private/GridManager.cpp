@@ -293,6 +293,12 @@ const ABuilding* UGridManager::GetSelectedBuilding() const
 	return this->_selectedBuilding;
 }
 
+ABuilding* UGridManager::GetBuildingAt(const GridCoord& coord) const
+{
+	if (!this->gridToBuilding.contains(coord)) return nullptr;
+	return this->gridToBuilding.at(coord);
+}
+
 void UGridManager::SwitchSelectedBuildingByIndex(int i, UObject* worldContextObject)
 {
 	// If invalid index, cancel the current selection

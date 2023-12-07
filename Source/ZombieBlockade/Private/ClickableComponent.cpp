@@ -1,6 +1,7 @@
 #include "ClickableComponent.h"
 #include "GameFramework/Actor.h"
 #include "Components/PrimitiveComponent.h"
+#include "InfoManager.h"
 #include "Engine/Engine.h"  // Include this for GEngine
 
 UClickableComponent::UClickableComponent()
@@ -16,16 +17,18 @@ void UClickableComponent::BeginPlay()
 	{
 		
 		TargetComponent = Owner->GetComponentByClass<UStaticMeshComponent>();
-		if (TargetComponent)
+		TArray<UStaticMeshComponent*> staticMeshes;
+		Owner->GetComponents<UStaticMeshComponent>(staticMeshes);
+		for (UStaticMeshComponent* component : staticMeshes)
 		{
 			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("PrimitiveComponent found!"));
-			TargetComponent->OnBeginCursorOver.AddDynamic(this, &UClickableComponent::OnMouseEnter);
-			TargetComponent->OnEndCursorOver.AddDynamic(this, &UClickableComponent::OnMouseLeave);
+			component->OnBeginCursorOver.AddDynamic(this, &UClickableComponent::OnMouseEnter);
+			component->OnEndCursorOver.AddDynamic(this, &UClickableComponent::OnMouseLeave);
 		}
-		else
-		{
-			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No PrimitiveComponent found!"));
-		}
+		//else
+		//{
+		//	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No PrimitiveComponent found!"));
+		//}
 	}
 	else
 	{
@@ -40,5 +43,8 @@ void UClickableComponent::OnMouseEnter(UPrimitiveComponent* TouchedComponent)
 
 void UClickableComponent::OnMouseLeave(UPrimitiveComponent* TouchedComponent)
 {
-	TouchedComponent->SetRenderCustomDepth(false);
+	if (GetOwner() != UInfoManager::Instance()->GetSelectedBuilding())
+	{
+		TouchedComponent->SetRenderCustomDepth(false);
+	}
 }
