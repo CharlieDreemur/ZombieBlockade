@@ -6,10 +6,16 @@
 #include "MouseRaycast.h"
 
 // Sets default values
-ABuilding::ABuilding() : coord(0, 0), data(nullptr), isDeployed(false), currentLevel(0), currentHealth(1), widgetComponents(), meshComponents(), previewMaterial(nullptr)
+ABuilding::ABuilding() : coord(0, 0), data(nullptr), isDeployed(false), currentLevel(0), currentHealth(1),
+	widgetComponents(), meshComponents(), previewMaterial(nullptr)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+}
+
+FVector ABuilding::GetCenterLocation() const
+{
+	return this->GetActorLocation() + FVector(0.5 * this->data->size_x, 0.5 * this->data->size_y, 0);
 }
 
 int ABuilding::GetCurrentLevel() const
@@ -31,6 +37,16 @@ int ABuilding::GetCurrentHealth() const
 int ABuilding::GetMaxHealth() const
 {
 	return this->data->levels[this->currentLevel].health;
+}
+
+void ABuilding::SetCurrentHealth(int health)
+{
+	this->currentHealth = std::max(std::min(health, this->GetMaxHealth()), 0);
+	if (this->currentHealth == 0)
+	{
+		UGridManager::Instance()->RemoveBuilding(this);
+		if (this) this->Destroy();
+	}
 }
 
 void ABuilding::SetDeployed(bool value)
@@ -81,16 +97,12 @@ bool ABuilding::LevelUp()
 float ABuilding::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	int actualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(
+	//	TEXT("Damage to building: %d"), actualDamage));
 	if (!this->isDeployed) return actualDamage;
 
 	// Apply the damage
-	this->currentHealth = std::min(0, this->currentHealth - actualDamage);
-	if (this->currentHealth == 0)
-	{
-		UGridManager::Instance()->RemoveBuilding(this);
-		if (this) this->Destroy();
-	}
-
+	this->SetCurrentHealth(this->currentHealth - actualDamage);
 	return actualDamage;
 }
 
