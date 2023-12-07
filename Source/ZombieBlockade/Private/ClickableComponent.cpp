@@ -12,13 +12,11 @@ UClickableComponent::UClickableComponent()
 void UClickableComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	AActor* Owner = GetOwner();
-	if (Owner)
+	AActor* owner = GetOwner();
+	if (owner)
 	{
-		
-		TargetComponent = Owner->GetComponentByClass<UStaticMeshComponent>();
 		TArray<UStaticMeshComponent*> staticMeshes;
-		Owner->GetComponents<UStaticMeshComponent>(staticMeshes);
+		owner->GetComponents<UStaticMeshComponent>(staticMeshes);
 		for (UStaticMeshComponent* component : staticMeshes)
 		{
 			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("PrimitiveComponent found!"));
