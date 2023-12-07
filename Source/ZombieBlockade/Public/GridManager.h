@@ -44,7 +44,6 @@ UCLASS()
 class ZOMBIEBLOCKADE_API UGridManager : public UObject
 {
 	GENERATED_BODY()
-	friend class UGameManager;
 
 public:
 	UFUNCTION(BlueprintPure, Category = "Grid Manager", DisplayName = "Grid Manager Instance")
@@ -68,6 +67,8 @@ public:
 
 	void SetSelectedBuilding(ABuilding* newSelectedBuilding);
 	const ABuilding* GetSelectedBuilding() const;
+
+	ABuilding* GetBuildingAt(const GridCoord& coord) const;
 
 	UFUNCTION(BlueprintCallable, Category="Grid Manager", meta = (WorldContext = "worldContextObject"))
 	void SwitchSelectedBuildingByIndex(int id, UObject* worldContextObject);

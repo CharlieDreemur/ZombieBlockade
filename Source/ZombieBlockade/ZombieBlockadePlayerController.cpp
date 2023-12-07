@@ -13,6 +13,7 @@
 #include "Engine/LocalPlayer.h"
 #include "MouseRaycast.h"
 #include "GridManager.h"
+#include "InfoManager.h"
 #include "Building.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -71,14 +72,25 @@ void AZombieBlockadePlayerController::SetupInputComponent()
 	}
 }
 
+// Helper
+ABuilding* GetBuildingByLocation(FVector location)
+{
+	GridCoord exactCoord = UGridManager::Instance()->GetGridFromCoord(location.X, location.Y).coord;
+	return UGridManager::Instance()->GetBuildingAt(exactCoord);
+}
+
 void AZombieBlockadePlayerController::OnInputStarted()
 {
+	if (GetBuildingByLocation(AMouseRaycast::GetMouseRaycast(this))) return;
 	StopMovement();
 }
 
 // Triggered every frame when the input is held down
 void AZombieBlockadePlayerController::OnSetDestinationTriggered()
 {
+	// Check if clicking on a building
+	if (GetBuildingByLocation(AMouseRaycast::GetMouseRaycast(this))) return;
+
 	// We flag that the input is being pressed
 	FollowTime += GetWorld()->GetDeltaSeconds();
 	
@@ -111,6 +123,15 @@ void AZombieBlockadePlayerController::OnSetDestinationTriggered()
 
 void AZombieBlockadePlayerController::OnSetDestinationReleased()
 {
+	// Check if clicking on a building
+	ABuilding* building = GetBuildingByLocation(AMouseRaycast::GetMouseRaycast(this));
+	if (building)
+	{
+		UInfoManager::Instance()->SetSelectedBuilding(building);
+		return;
+	}
+	UInfoManager::Instance()->SetSelectedBuilding(nullptr);
+
 	// If it was a short press
 	if (FollowTime <= ShortPressThreshold)
 	{
@@ -149,57 +170,3 @@ void AZombieBlockadePlayerController::OnBuildStructureTriggered()
 {
 	UGridManager::Instance()->DeploySelectedBuilding(this);
 }
-
-/*
-void AZombieBlockadePlayerController::_OnBuildStructureTriggered()
-{
-	const BuildingInfo& info = GridManager::Instance().GetSelectedBuilding();
-
-	// Return if nothing selected
-	if (info.name.empty())
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("No building selected")));
-		return;
-	}
-
-	AMouseRaycast::OnMouseClick(this, EKeys::RightMouseButton);
-	FVector hitLocation = AMouseRaycast::GetMouseRaycast(this);
-	GridCoord coord = GridManager::Instance().GetGridFromCoord(
-		hitLocation.X - (info.sizeX - 1) * GridManager::Instance().GetGridSize() * 0.5,
-		hitLocation.Y - (info.sizeY - 1) * GridManager::Instance().GetGridSize() * 0.5).coord;
-	GridCoord exactCoord = GridManager::Instance().GetGridFromCoord(hitLocation.X, hitLocation.Y).coord;
-	float gridSize = GridManager::Instance().GetGridSize();
-	if (GridManager::Instance().CheckEmpty(coord, info.sizeX, info.sizeY))
-	{
-		// Add building
-		std::wstring path = L"Blueprint'/Game/Blueprints/" + info.name + L"." + info.name + L"_C'";
-		UClass* buildingClass = StaticLoadClass(AActor::StaticClass(), nullptr,
-			reinterpret_cast<const TCHAR*>(path.c_str()));
-		UWorld* world = GetWorld();
-		FVector location = FVector(coord.first * gridSize, coord.second * gridSize, 0);
-
-		if (world && buildingClass)
-		{
-			ABuilding* newBuilding = world->SpawnActor<ABuilding>(buildingClass, location, FRotator(0, 0, 0), {});
-			newBuilding->coord = coord;
-			GridManager::Instance().AddBuilding(newBuilding, true);
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(
-				TEXT("Add building: <%d, %d>, <%d, %d>"), coord.first, coord.second, info.sizeX, info.sizeY));
-		}
-		else
-		{
-			// Display error message
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Cannot find BP of Building")));
-		}
-	}
-	else if (GridManager::Instance().gridToBuilding.contains(exactCoord))
-	{
-		// Remove building
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(
-			TEXT("Remove building: <%d, %d>"), exactCoord.first, exactCoord.second));
-		ABuilding* OldBuilding = GridManager::Instance().gridToBuilding.at(exactCoord);
-		GridManager::Instance().RemoveBuilding(OldBuilding);
-		OldBuilding->Destroy();
-	}
-}
-*/

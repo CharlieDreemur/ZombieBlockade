@@ -7,7 +7,7 @@
 
 // Sets default values
 ABuilding::ABuilding() : coord(0, 0), data(nullptr), isDeployed(false), currentLevel(0), currentHealth(1),
-	widgetComponents(), meshComponents(), previewMaterial(nullptr)
+	widgetComponents(), previewMaterial(nullptr), meshComponents()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
