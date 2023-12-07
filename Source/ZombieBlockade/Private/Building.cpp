@@ -12,6 +12,11 @@ ABuilding::ABuilding() : coord(0, 0), data(nullptr), isDeployed(false), currentL
 	PrimaryActorTick.bCanEverTick = true;
 }
 
+FVector ABuilding::GetCenterLocation() const
+{
+	return this->GetActorLocation() + FVector(0.5 * this->data->size_x, 0.5 * this->data->size_y, 0);
+}
+
 int ABuilding::GetCurrentLevel() const
 {
 	return this->currentLevel;
@@ -81,10 +86,12 @@ bool ABuilding::LevelUp()
 float ABuilding::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	int actualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(
+		TEXT("Damage to building: %d"), actualDamage));
 	if (!this->isDeployed) return actualDamage;
 
 	// Apply the damage
-	this->currentHealth = std::min(0, this->currentHealth - actualDamage);
+	this->currentHealth = std::max(0, this->currentHealth - actualDamage);
 	if (this->currentHealth == 0)
 	{
 		UGridManager::Instance()->RemoveBuilding(this);
