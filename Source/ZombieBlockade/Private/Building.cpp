@@ -3,6 +3,7 @@
 
 #include "Building.h"
 #include "GridManager.h"
+#include "InfoManager.h"
 #include "MouseRaycast.h"
 
 // Sets default values
@@ -11,6 +12,11 @@ ABuilding::ABuilding() : coord(0, 0), data(nullptr), isDeployed(false), currentL
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+}
+
+FBuildingData& ABuilding::GetData() const
+{
+	return *this->data;
 }
 
 FVector ABuilding::GetCenterLocation() const
@@ -50,6 +56,10 @@ void ABuilding::SetCurrentHealth(int health)
 	if (this->currentHealth == 0)
 	{
 		UGridManager::Instance()->RemoveBuilding(this);
+		if (UInfoManager::Instance()->GetSelectedBuilding() == this)
+		{
+			UInfoManager::Instance()->SetSelectedBuilding(nullptr);
+		}
 		if (this) this->Destroy();
 	}
 	if (this->healthBar)

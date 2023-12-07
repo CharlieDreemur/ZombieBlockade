@@ -24,6 +24,9 @@ public:
 	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Building");
 	FBuildingData* data;
 
+	UFUNCTION(BlueprintPure, Category = "Building", DisplayName = "Get Data")
+	FBuildingData& GetData() const;
+
 	UFUNCTION(BlueprintPure, Category = "Building", DisplayName = "Get Center Location")
 	FVector GetCenterLocation() const;
 
