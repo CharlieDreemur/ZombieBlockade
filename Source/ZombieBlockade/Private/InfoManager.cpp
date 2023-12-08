@@ -36,10 +36,10 @@ ABuilding* UInfoManager::GetSelectedBuilding() const
 
 void UInfoManager::SetSelectedBuilding(ABuilding* building)
 {
-	if (this->selectedBuilding == building) return;
+	if (!this->canSelect || this->selectedBuilding == building) return;
 	// Cancel highlight of current building
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(
-		TEXT("Switched to building: %s"), building ? *building->data->name.ToString() : L"nullptr"));
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(
+	//	TEXT("Switched to building: %s"), building ? *building->data->name.ToString() : L"nullptr"));
 	if (this->selectedBuilding)
 	{
 		this->selectedBuilding->SetHighlight(false);
@@ -47,6 +47,17 @@ void UInfoManager::SetSelectedBuilding(ABuilding* building)
 	this->selectedBuilding = building;
 }
 
-UInfoManager::UInfoManager() : selectedBuilding()
+void UInfoManager::PreventSelection()
+{
+	this->SetSelectedBuilding(nullptr);
+	this->canSelect = false;
+}
+
+void UInfoManager::AllowSelection()
+{
+	this->canSelect = true;
+}
+
+UInfoManager::UInfoManager() : selectedBuilding(), canSelect(true)
 {
 }

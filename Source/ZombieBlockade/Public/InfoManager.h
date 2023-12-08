@@ -30,8 +30,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Info Manager", DisplayName = "Set Selected Building")
 	void SetSelectedBuilding(ABuilding* building);
 
+	UFUNCTION(BlueprintCallable, Category = "Info Manager", DisplayName = "Prevent Selection")
+	void PreventSelection();
+
+	UFUNCTION(BlueprintCallable, Category = "Info Manager", DisplayName = "Allow Selection")
+	void AllowSelection();
+
 private:
 	UInfoManager();
 	static UInfoManager* _instance;
 	ABuilding* selectedBuilding;
+	bool canSelect;
 };

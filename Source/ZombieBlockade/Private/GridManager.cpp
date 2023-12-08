@@ -314,23 +314,24 @@ void UGridManager::SwitchSelectedBuildingByIndex(int i, UObject* worldContextObj
 
 void UGridManager::TempSwitchSelectedBuilding(bool forward, UObject* worldContextObject)
 {
-	static int i = 0;
-	if (!this->dataAsset)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Building data asset not found"));
-		return;
-	}
+	this->SwitchSelectedBuildingByIndex(0, worldContextObject);
+	//static int i = 0;
+	//if (!this->dataAsset)
+	//{
+	//	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Building data asset not found"));
+	//	return;
+	//}
 
-	int32 count = dataAsset->BuildingInfo.Num() + 1;
-	if (forward)
-	{
-		i = (i + 1) % count; // Wrap around if index exceeds the number of keys + 1.
-	}
-	else
-	{
-		i = (i - 1 + count) % count; // Wrap around if index goes below 0.
-	}
-	this->SwitchSelectedBuildingByIndex(i, worldContextObject);
+	//int32 count = dataAsset->BuildingInfo.Num() + 1;
+	//if (forward)
+	//{
+	//	i = (i + 1) % count; // Wrap around if index exceeds the number of keys + 1.
+	//}
+	//else
+	//{
+	//	i = (i - 1 + count) % count; // Wrap around if index goes below 0.
+	//}
+	//this->SwitchSelectedBuildingByIndex(i, worldContextObject);
 }
 
 void UGridManager::SwitchSelectedBuilding(FBuildingData* buildingData, UObject* worldContextObject)
