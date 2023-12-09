@@ -22,7 +22,10 @@ FBuildingData& ABuilding::GetData() const
 
 FVector ABuilding::GetCenterLocation() const
 {
-	return this->GetActorLocation() + FVector(0.5 * this->data->size_x, 0.5 * this->data->size_y, 0);
+	float gridSize = UGridManager::Instance()->GetGridSize();
+	FVector corner = this->GetActorLocation();
+	corner.Z = 0;
+	return corner + FVector(0.5 * this->data->size_x * gridSize, 0.5 * this->data->size_y * gridSize, 0);
 }
 
 int ABuilding::GetCurrentLevel() const
@@ -180,6 +183,7 @@ void ABuilding::BeginPlay()
 	for (UStaticMeshComponent* meshComponent : _meshComponents)
 	{
 		this->meshComponents.Add({ meshComponent, meshComponent->GetMaterials() });
+		meshComponent->SetCollisionObjectType(ECollisionChannel::ECC_GameTraceChannel1);
 	}
 
 	// Find the widget components
